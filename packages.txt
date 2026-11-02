@@ -1,0 +1,8 @@
+# The Wave 1 packages of `ct-pkg/index`, one `name url` pair per line.
+#
+# `tools/refresh-index.sh` resolves each repository's highest `v*` tag, clones
+# it and lets `tools/gen-index.sh` write one index line. A comment line or a
+# blank line is skipped.
+hal https://github.com/ct-pkg/hal
+hal-posix https://github.com/ct-pkg/hal-posix
+clib https://github.com/ct-pkg/clib

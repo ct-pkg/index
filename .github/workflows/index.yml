@@ -1,0 +1,37 @@
+name: index
+
+# Rebuild `index` from the package repositories named in `packages.txt`.
+# The tag a package publishes is the only trigger: the nightly run picks up a
+# new `v*` tag on the next pass, and a release can dispatch the workflow by hand.
+on:
+  schedule:
+    - cron: '0 18 * * *'   # 02:00 Asia/Shanghai
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: index
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: regenerate
+        run: sh tools/refresh-index.sh
+
+      - name: commit
+        run: |
+          git config user.name "ct-pkg index bot"
+          git config user.email "ct-pkg@users.noreply.github.com"
+          if git diff --quiet index; then
+            echo "index is unchanged"
+          else
+            git add index
+            git commit -m "index: refresh the Wave 1 entries"
+            git push
+          fi

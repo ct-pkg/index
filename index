@@ -1,0 +1,3 @@
+hal 1.0.0 https://github.com/ct-pkg/hal v1.0.0 sha256:a07adad0e863140e282b0340c4c58597faf51724195c7622db5aa9806d6af990
+hal-posix 1.0.0 https://github.com/ct-pkg/hal-posix v1.0.0 sha256:b994b057117cb771bae72b69910511ce1eb852b3cfc4cfd0ce9498ce032fb3c0
+clib 1.0.0 https://github.com/ct-pkg/clib v1.0.0 sha256:5fc7bd3b5745dbebb3e537267737c21057eec175d91d989b453366dc62434300
