@@ -23,8 +23,13 @@ while IFS=' ' read -r name url rest; do
         echo "refresh-index: '$name' has no v* tag at $url" >&2
         exit 1
     fi
+    # `clone --branch <tag>` warns ("is not a commit") when the tag is annotated
+    # and only checks out lightweight ones cleanly, so clone the default branch
+    # and check the tag out instead: `checkout` peels both shapes. The packages
+    # are small, so a full clone is not a cost the nightly run cares about.
     rm -rf "$work/$name"
-    git -c advice.detachedHead=false clone --quiet --depth 1 --branch "$tag" "$url" "$work/$name"
+    git clone --quiet "$url" "$work/$name"
+    git -C "$work/$name" -c advice.detachedHead=false checkout --quiet "tags/$tag"
     "$here/tools/gen-index.sh" "$here/index.tmp" "$work/$name" "$url" "$tag" >&2
 done <"$here/packages.txt"
 mv "$here/index.tmp" "$here/index"
