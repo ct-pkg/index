@@ -11,13 +11,28 @@ name version git-url tag sha256:<64 lowercase hex>
 checks the fetched tree against the digest and pins the commit in `ct.lock`.
 There is no HTTP service and no database: the file is the index.
 
-## Wave 1
+## Published
+
+All eight packages are published at `0.1.0` (2026-11-07). The withdrawn
+`1.0.0` / `1.0.1` tags are gone from every remote and the version line
+restarted at `0.1.0`:
 
 | Package | Repository |
 | --- | --- |
 | `hal` | https://github.com/ct-pkg/hal |
 | `hal-posix` | https://github.com/ct-pkg/hal-posix |
-| `clib` | https://github.com/ct-pkg/clib |
+| `std` | https://github.com/ct-pkg/std |
+| `zlib` | https://github.com/ct-pkg/zlib |
+| `png` | https://github.com/ct-pkg/png |
+| `net-posix` | https://github.com/ct-pkg/net-posix |
+| `sqlite` | https://github.com/ct-pkg/sqlite |
+| `sql` | https://github.com/ct-pkg/sql |
+
+`std` is the CT standard library moved out of ct-lang, and it now owns the C
+mappings that used to live in `clib` (which was deleted, not archived). It is
+the first package that must also be usable by an *older* compiler, which the
+index cannot express: only the highest `v*` tag is listed. See the package
+README for the consequence.
 
 ## Regenerating
 
@@ -28,9 +43,10 @@ needs to push a tag; the next pass picks it up, or dispatch the workflow by hand
 
 The digest is the one `ct get` computes: the SHA-256 of every regular file's
 relative path, a newline and the file's bytes, in sorted order, skipping `.git`,
-`vendor` and `.ctcache`. A package repository therefore must not carry CI
-workflows or other files that change after the tag — the tag and the digest
-would stop agreeing.
+`vendor` and `.ctcache`. CI workflows and READMEs are therefore part of the
+digest: `refresh-index` checks out the tag and digests that tree, so any file
+present at tag time is fine, but nothing may be added or edited under an
+existing tag — that needs a new version and a new tag.
 
 ## Usage
 

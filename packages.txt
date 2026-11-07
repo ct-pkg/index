@@ -3,6 +3,14 @@
 # `tools/refresh-index.sh` resolves each repository's highest `v*` tag, clones
 # it and lets `tools/gen-index.sh` write one index line. A comment line or a
 # blank line is skipped.
+#
+# Version line reset to 0.1.0 (2026-11-06); all eight packages are published at
+# that tag (2026-11-07) and the withdrawn v1.x tags are gone from every remote.
 hal https://github.com/ct-pkg/hal
 hal-posix https://github.com/ct-pkg/hal-posix
-clib https://github.com/ct-pkg/clib
+std https://github.com/ct-pkg/std
+zlib https://github.com/ct-pkg/zlib
+png https://github.com/ct-pkg/png
+net-posix https://github.com/ct-pkg/net-posix
+sqlite https://github.com/ct-pkg/sqlite
+sql https://github.com/ct-pkg/sql
