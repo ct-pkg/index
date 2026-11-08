@@ -13,10 +13,10 @@ There is no HTTP service and no database: the file is the index.
 
 ## Published
 
-Ten packages are registered as of 2026-11-08. Versions differ because the index
-always names each remote's highest `v*` tag: `std`, `sql`, `png` and `net-posix`
-are at `0.2.0`; `hal`, `hal-posix`, `zlib`, `sqlite`, `json` and `curl` are at
-`0.1.0`. The withdrawn `1.0.0` / `1.0.1` tags are gone from every remote and the
+Twelve packages are registered as of 2026-11-08. Versions differ because the
+index always names each remote's highest `v*` tag: `std`, `sql`, `png` and
+`net-posix` are at `0.2.0`; `hal`, `hal-posix`, `zlib`, `sqlite`, `json`,
+`curl`, `hashmap` and `dict` are at `0.1.0`. The withdrawn `1.0.0` / `1.0.1` tags are gone from every remote and the
 version line restarted at `0.1.0`:
 
 | Package | Repository | Version |
@@ -31,28 +31,14 @@ version line restarted at `0.1.0`:
 | `sql` | https://github.com/ct-pkg/sql | `0.2.0` |
 | `json` | https://github.com/ct-pkg/json | `0.1.0` |
 | `curl` | https://github.com/ct-pkg/curl | `0.1.0` |
+| `hashmap` | https://github.com/ct-pkg/hashmap | `0.1.0` |
+| `dict` | https://github.com/ct-pkg/dict | `0.1.0` |
 
 `std` is the CT standard library moved out of ct-lang, and it now owns the C
 mappings that used to live in `clib` (which was deleted, not archived). It is
 the first package that must also be usable by an *older* compiler, which the
 index cannot express: only the highest `v*` tag is listed. See the package
 README for the consequence.
-
-## Registered, not yet in the index
-
-Two repositories were registered on 2026-11-08 but have no `v*` tag yet, so they
-have **no line in `index` and no digest**. Their `packages.txt` lines stay
-commented because `tools/refresh-index.sh` aborts the whole run on a repository
-without a release tag; `tools/repos.txt` records the absent tag as `-`.
-
-| Package | Repository | State |
-| --- | --- | --- |
-| `hashmap` | https://github.com/ct-pkg/hashmap | S0 requirements and skeleton, no tag |
-| `dict` | https://github.com/ct-pkg/dict | S0 requirements and skeleton, no tag |
-
-When either pushes its first `v*` tag (planned `v0.1.0`), uncomment its
-`packages.txt` line and the next refresh adds the real version and digest. No
-version or digest is invented here on purpose.
 
 ## Regenerating
 
@@ -113,13 +99,13 @@ ct verify
 | 术语 | 含义 | 本包中的所指 |
 | --- | --- | --- |
 | `ct-pkg/index`（索引仓库） | 只放索引文件与刷新脚本的仓库，本身不发版。 | 本仓库；`tools/repos.txt` 中 `index` 一行的 `tag` 列为 `-`。 |
-| 包仓库（package repository） | 每个包各自独立的仓库，根目录放 `ct.pkg` 与源码，发版时打 tag。 | 上文 `Published` 与 `Registered` 两节列出的 `github.com/ct-pkg/<name>`。 |
+| 包仓库（package repository） | 每个包各自独立的仓库，根目录放 `ct.pkg` 与源码，发版时打 tag。 | 上文 `Published` 一节列出的 `github.com/ct-pkg/<name>`。 |
 | `packages.txt` | 刷新索引的输入清单，一行一个仓库。 | 仓库根目录的 `packages.txt`，字段顺序是 `name url`，空格分隔，行序即刷新顺序。 |
-| `#`（注释行） | 以 `#` 开头的行与空行都不参与解析。 | `packages.txt` 顶部的说明段；`refresh-index.sh` 的 `'' \| '#'*` 分支直接跳过，末尾 `hashmap` / `dict` 两行因此保持登记但没有索引行。 |
+| `#`（注释行） | 以 `#` 开头的行与空行都不参与解析。 | `packages.txt` 顶部的说明段；`refresh-index.sh` 的 `'' \| '#'*` 分支直接跳过。需要临时停用某个仓库时把它注释掉即可。 |
 | `name` | 包名，同时是仓库名与 `ct.pkg` 的 `name` 键。 | `packages.txt` 第一列即仓库名；`gen-index.sh` 写入 `index` 的名字取自包内 `ct.pkg`，两者与 `github.com/ct-pkg/<name>` 必须一致。 |
-| `version` | 包的语义化版本 `x.y.z`，只比较前三位数字。 | `index` 第二列，取自 `ct.pkg` 的 `version =`，当前八个包都是 `0.1.0`；`ct get name@range` 按这一列筛选并取满足范围的最低版本。 |
+| `version` | 包的语义化版本 `x.y.z`，只比较前三位数字。 | `index` 第二列，取自 `ct.pkg` 的 `version =`；当前 `std` / `sql` / `png` / `net-posix` 是 `0.2.0`，其余八个是 `0.1.0`。`ct get name@range` 按这一列筛选并取满足范围的最低版本。 |
 | `git-url` | 克隆源码用的仓库地址。 | `index` 第三列（`packages.txt` 第二列），如 `https://github.com/ct-pkg/hal`。 |
-| `tag` / `v*` | 指向一次发布的 git 标签，约定为 `v<version>`。 | `index` 第四列记录实际 tag；`refresh-index.sh` 用 `sort -V` 取远端最高的 `v*` tag，因此每个包在索引里只有一行，只能表达一条版本线。 |
+| `tag` / `v*` | 指向一次发布的 git 标签，约定为 `v<version>`。 | `index` 第四列记录实际 tag；`refresh-index.sh` 用 awk 按三段数字比较取远端最高的 `v*` tag（BSD `sort` 没有 `-V`），因此每个包在索引里只有一行，只能表达一条版本线。 |
 | `sha256`（digest / 摘要） | 按路径排序后，把每个文件的相对路径、换行与内容依次汇入同一个 SHA-256 流得到的摘要。 | `index` 第五列 `sha256:<64 hex>`；`gen-index.sh` 生成，`ct get` 取回后比对，不一致报 `does not match the index`。 |
 | 摘要排除名单 | 不属于包内容、不计入摘要的目录名。 | `.git`、`vendor`、`.ctcache` 之外的所有普通文件都会进摘要；`gen-index.sh` 的 `find` 与 `ct` 的 `sha_collect` 跳过同一组名字。 |
 | `ct get` | 把一个 spec 解析成具体版本、克隆进 `vendor/` 并写锁的取包命令。 | 三种来源：以 `.`、`/` 开头或带 `file://` 的 spec 走本地目录；裸名先查 `--index`（或 `CT_INDEX`）指定的索引，命中则按该行的 `git-url` / `tag` / `sha256` 取；未命中或无索引时按 `CT_REGISTRY`（默认 `https://github.com/ct-pkg`）当 git 源取满足范围的 tag。 |
@@ -132,4 +118,4 @@ ct verify
 | `tools/repos.txt` | 记录所有 ct-pkg 仓库发布状态的清单。 | ct-pkg 工作区根的 `tools/repos.txt`（不在 index 仓库内），格式 `name \| tag \| content \| description`，无 tag 记 `-`。 |
 | nightly workflow | 每天定时重建索引并提交的 CI 工作流。 | `.github/workflows/index.yml`，cron `0 18 * * *`（Asia/Shanghai 02:00），也可用 `workflow_dispatch` 手动触发。 |
 | `clib` | ct-lang 里原先存放 C 映射的目录，已删除并入 `std` 包。 | 本仓库不含该目录；`Published` 节用来说明 `std` 承接了它原来的映射。 |
-| `S0` | 项目阶段的第一个切片，只做需求、文档与目录骨架。 | `Registered` 表中 `hashmap` / `dict` 的 `State`：有骨架、无实现、无 tag。 |
+| `S0` | 项目阶段的第一个切片，只做需求、文档与目录骨架。 | 历史阶段名：`hashmap` / `dict` 曾停留在「有骨架、无实现、无 tag」，两者现已发布 `0.1.0` 并进入 `index`。 |
