@@ -13,20 +13,24 @@ There is no HTTP service and no database: the file is the index.
 
 ## Published
 
-All eight packages are published at `0.1.0` (2026-11-07). The withdrawn
-`1.0.0` / `1.0.1` tags are gone from every remote and the version line
-restarted at `0.1.0`:
+Ten packages are registered as of 2026-11-08. Versions differ because the index
+always names each remote's highest `v*` tag: `std`, `sql`, `png` and `net-posix`
+are at `0.2.0`; `hal`, `hal-posix`, `zlib`, `sqlite`, `json` and `curl` are at
+`0.1.0`. The withdrawn `1.0.0` / `1.0.1` tags are gone from every remote and the
+version line restarted at `0.1.0`:
 
-| Package | Repository |
-| --- | --- |
-| `hal` | https://github.com/ct-pkg/hal |
-| `hal-posix` | https://github.com/ct-pkg/hal-posix |
-| `std` | https://github.com/ct-pkg/std |
-| `zlib` | https://github.com/ct-pkg/zlib |
-| `png` | https://github.com/ct-pkg/png |
-| `net-posix` | https://github.com/ct-pkg/net-posix |
-| `sqlite` | https://github.com/ct-pkg/sqlite |
-| `sql` | https://github.com/ct-pkg/sql |
+| Package | Repository | Version |
+| --- | --- | --- |
+| `hal` | https://github.com/ct-pkg/hal | `0.1.0` |
+| `hal-posix` | https://github.com/ct-pkg/hal-posix | `0.1.0` |
+| `std` | https://github.com/ct-pkg/std | `0.2.0` |
+| `zlib` | https://github.com/ct-pkg/zlib | `0.1.0` |
+| `png` | https://github.com/ct-pkg/png | `0.2.0` |
+| `net-posix` | https://github.com/ct-pkg/net-posix | `0.2.0` |
+| `sqlite` | https://github.com/ct-pkg/sqlite | `0.1.0` |
+| `sql` | https://github.com/ct-pkg/sql | `0.2.0` |
+| `json` | https://github.com/ct-pkg/json | `0.1.0` |
+| `curl` | https://github.com/ct-pkg/curl | `0.1.0` |
 
 `std` is the CT standard library moved out of ct-lang, and it now owns the C
 mappings that used to live in `clib` (which was deleted, not archived). It is
@@ -56,6 +60,38 @@ version or digest is invented here on purpose.
 `tools/refresh-index.sh`, which resolves each repository's highest `v*` tag,
 clones it and lets `tools/gen-index.sh` add or replace one line. A release only
 needs to push a tag; the next pass picks it up, or dispatch the workflow by hand.
+
+### Manual refresh, commit and push
+
+The same script carries the manual workflow; no flags means "refresh only":
+
+```sh
+sh tools/refresh-index.sh            # rewrite index, leave it uncommitted
+sh tools/refresh-index.sh --dry-run  # per-package old -> new + unified diff
+sh tools/refresh-index.sh --commit   # rewrite and commit index only
+sh tools/refresh-index.sh --push     # commit, then push HEAD:main over SSH
+```
+
+`--push` uses `git@github.com:ct-pkg/index.git` and passes it to `git push` as a
+one-shot URL: the `origin` remote stays on HTTPS. It never passes `--force`.
+Before pushing it fetches `main` and refuses unless the remote tip is an ancestor
+of `HEAD`; after pushing it runs `git ls-remote` and fails if the remote `main`
+does not equal the local `HEAD`. A dirty work tree (anything other than `index`)
+makes the script exit before it writes.
+
+For tests against a local bare repository, override both URLs:
+
+```sh
+INDEX_PUSH_URL=/tmp/remote.git INDEX_READ_URL=/tmp/remote.git \
+    sh tools/refresh-index.sh --push
+```
+
+`tools/repos.txt` lives outside this repository. Its `tag` column is derived
+from the published index; after a refresh, run `tools/sync-repos-tags.sh`
+(or `--check` in CI) from the workspace root instead of editing tags by hand.
+
+A repository without a `v*` tag is reported by name and URL; the run exits 1
+and leaves `index` untouched, so a missing tag can never silently drop a line.
 
 The digest is the one `ct get` computes: the SHA-256 of every regular file's
 relative path, a newline and the file's bytes, in sorted order, skipping `.git`,

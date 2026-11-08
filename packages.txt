@@ -1,11 +1,10 @@
-# The Wave 1 packages of `ct-pkg/index`, one `name url` pair per line.
+# The ct-pkg packages known to `ct-pkg/index`, one `name url` pair per line.
 #
 # `tools/refresh-index.sh` resolves each repository's highest `v*` tag, clones
 # it and lets `tools/gen-index.sh` write one index line. A comment line or a
-# blank line is skipped.
-#
-# Version line reset to 0.1.0 (2026-11-06); all eight packages are published at
-# that tag (2026-11-07) and the withdrawn v1.x tags are gone from every remote.
+# blank line is skipped. Versions are not listed here: the remote tag decides.
+# As of 2026-11-08 std, sql, png and net-posix are at v0.2.0; the other six are
+# at v0.1.0.
 hal https://github.com/ct-pkg/hal
 hal-posix https://github.com/ct-pkg/hal-posix
 std https://github.com/ct-pkg/std
@@ -14,10 +13,13 @@ png https://github.com/ct-pkg/png
 net-posix https://github.com/ct-pkg/net-posix
 sqlite https://github.com/ct-pkg/sqlite
 sql https://github.com/ct-pkg/sql
+json https://github.com/ct-pkg/json
+curl https://github.com/ct-pkg/curl
 #
-# Registered 2026-11-08 without a release tag. `refresh-index.sh` aborts the
-# whole run when a repository has no `v*` tag, so these two stay commented until
-# their first tag is pushed. Uncomment both lines and delete this note in the
-# same commit that publishes 0.1.0; until then the index has no line for them.
+# Registered 2026-11-08 without a release tag. `refresh-index.sh` reports every
+# repository without a `v*` tag and exits 1 without touching `index`, so these
+# two stay commented until their first tag is pushed. Uncomment both lines and
+# delete this note in the same commit that publishes 0.1.0; until then the
+# index has no line for them.
 # hashmap https://github.com/ct-pkg/hashmap
 # dict https://github.com/ct-pkg/dict
