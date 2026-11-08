@@ -1,8 +1,10 @@
 hal 0.1.0 https://github.com/ct-pkg/hal v0.1.0 sha256:d38db6f2f733a13a7067e465267d07eb4f8f1ecc2e486a772160d1a18a92fbde
 hal-posix 0.1.0 https://github.com/ct-pkg/hal-posix v0.1.0 sha256:b732d63ee6a93456a41d9af7a7d74442d6394a55b10c0a053250b2c2c769b57b
-std 0.1.0 https://github.com/ct-pkg/std v0.1.0 sha256:72918e75795094156b93064d4612edda42a7ba6669b0f139d8a412101de4256f
+std 0.2.0 https://github.com/ct-pkg/std v0.2.0 sha256:cee740b3a4edc006cc8910e320f9b7ff90dbdc75b4f516eea1d710f6bdccae26
 zlib 0.1.0 https://github.com/ct-pkg/zlib v0.1.0 sha256:74a0370c3b8efde77bd0d7a27fd84323fe13a6425c65980f2d15c708ce4d47a8
-png 0.1.0 https://github.com/ct-pkg/png v0.1.0 sha256:d1a949ffd1e26b64829c6afbfded16cb3fe592faf7a354da9c39ec95803274d4
-net-posix 0.1.0 https://github.com/ct-pkg/net-posix v0.1.0 sha256:b5a74721e4ecd63407d6c899d41df3f8fce4ae788bcd136400c509ebe3a3acd7
+png 0.2.0 https://github.com/ct-pkg/png v0.2.0 sha256:2b6b5ce9010b01459da40ca14f02f3a6bbe51d10c427184d9bc178a62e88275e
+net-posix 0.2.0 https://github.com/ct-pkg/net-posix v0.2.0 sha256:9f6e3b32b8854dae014dbb3fc552df26ccaf87256cc5b9a83a5e9edcec735b43
 sqlite 0.1.0 https://github.com/ct-pkg/sqlite v0.1.0 sha256:7936eda60faf780ae32516178e262de020aa9d03e32293025cfcc55ff6eedc33
-sql 0.1.0 https://github.com/ct-pkg/sql v0.1.0 sha256:db8043ed0097adff2b426b21b3636b6fb446b105b478a42b419f3376c6c71709
+sql 0.2.0 https://github.com/ct-pkg/sql v0.2.0 sha256:12d498af52e9a0a42763ff4c1fdec424dc0f455b5c079f877f1f19c02deb67f6
+json 0.1.0 https://github.com/ct-pkg/json v0.1.0 sha256:0f5355aa4ecd8d7724ad96587da8b30060f805c1f82a7387d2bf652e2cdb5f99
+curl 0.1.0 https://github.com/ct-pkg/curl v0.1.0 sha256:0fe07805b218bc17757343539bb1f02000212b2c877de75952f4e9638418270f
