@@ -34,6 +34,22 @@ the first package that must also be usable by an *older* compiler, which the
 index cannot express: only the highest `v*` tag is listed. See the package
 README for the consequence.
 
+## Registered, not yet in the index
+
+Two repositories were registered on 2026-11-08 but have no `v*` tag yet, so they
+have **no line in `index` and no digest**. Their `packages.txt` lines stay
+commented because `tools/refresh-index.sh` aborts the whole run on a repository
+without a release tag; `tools/repos.txt` records the absent tag as `-`.
+
+| Package | Repository | State |
+| --- | --- | --- |
+| `hashmap` | https://github.com/ct-pkg/hashmap | S0 requirements and skeleton, no tag |
+| `dict` | https://github.com/ct-pkg/dict | S0 requirements and skeleton, no tag |
+
+When either pushes its first `v*` tag (planned `v0.1.0`), uncomment its
+`packages.txt` line and the next refresh adds the real version and digest. No
+version or digest is invented here on purpose.
+
 ## Regenerating
 
 `packages.txt` names the repositories. The nightly workflow runs

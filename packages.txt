@@ -14,3 +14,10 @@ png https://github.com/ct-pkg/png
 net-posix https://github.com/ct-pkg/net-posix
 sqlite https://github.com/ct-pkg/sqlite
 sql https://github.com/ct-pkg/sql
+#
+# Registered 2026-11-08 without a release tag. `refresh-index.sh` aborts the
+# whole run when a repository has no `v*` tag, so these two stay commented until
+# their first tag is pushed. Uncomment both lines and delete this note in the
+# same commit that publishes 0.1.0; until then the index has no line for them.
+# hashmap https://github.com/ct-pkg/hashmap
+# dict https://github.com/ct-pkg/dict
