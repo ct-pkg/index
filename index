@@ -8,3 +8,5 @@ sqlite 0.1.0 https://github.com/ct-pkg/sqlite v0.1.0 sha256:7936eda60faf780ae325
 sql 0.2.0 https://github.com/ct-pkg/sql v0.2.0 sha256:12d498af52e9a0a42763ff4c1fdec424dc0f455b5c079f877f1f19c02deb67f6
 json 0.1.0 https://github.com/ct-pkg/json v0.1.0 sha256:0f5355aa4ecd8d7724ad96587da8b30060f805c1f82a7387d2bf652e2cdb5f99
 curl 0.1.0 https://github.com/ct-pkg/curl v0.1.0 sha256:0fe07805b218bc17757343539bb1f02000212b2c877de75952f4e9638418270f
+hashmap 0.1.0 https://github.com/ct-pkg/hashmap v0.1.0 sha256:f0c0401a23b63e2ab8976569862478feaf96c689e0bee547d4ee682c59d6ed53
+dict 0.1.0 https://github.com/ct-pkg/dict v0.1.0 sha256:bccf387f39ec2f2f1f777e6b97c84c8e2cd0ef8384247a60b5e92f938fe1d46c
