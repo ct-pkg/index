@@ -1,0 +1,20 @@
+# name|tag|content|description
+#
+# One row per ct-pkg repository. `tag` is `-` when the repository has no release
+# tag. `content` is the file read back after a push to prove it landed.
+#
+# The tag column mirrors index/index: after refreshing the index, run
+# tools/sync-repos-tags.sh (or --check) instead of editing tags by hand.
+hal|v0.1.0|ct.pkg|The hal contract package: Uart, Gpio, Clock, Log
+hal-posix|v0.1.0|ct.pkg|POSIX (macOS / Linux) binding for the hal contract package
+std|v0.2.0|ct.pkg|The CT standard library moved out of ct-lang: str, io, fs, utf8, vec, map, arena, test, num, math
+zlib|v0.1.0|ct.pkg|The zlib (deflate/inflate) mapping package
+png|v0.2.0|ct.pkg|A libpng mapping package
+net-posix|v0.2.0|ct.pkg|A minimal TCP socket mapping for CT programs
+sqlite|v0.1.0|ct.pkg|SQLite mapping package
+sql|v0.2.0|ct.pkg|A dialect-neutral SQL builder
+hashmap|v0.1.0|ct.pkg|A dynamically growing hash map (tidwall/hashmap.c) with copied entries
+dict|v0.1.0|ct.pkg|The Redis 7.2.x dict: pointer-only entries, incremental rehash, safe iterator
+json|v0.1.0|ct.pkg|JSON text <-> tree mapped onto a bundled cJSON 1.7.19
+curl|v0.1.0|ct.pkg|The libcurl (easy handle) mapping package
+index|-|index|The official ct-pkg package index

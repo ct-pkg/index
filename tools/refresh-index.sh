@@ -68,7 +68,7 @@ if [ "$dry" = 0 ]; then
     unexpected=$(printf '%s\n' "$dirty" | awk 'NF && $NF != "index"')
     if [ -n "$unexpected" ]; then
         printf 'refresh-index: refusing to run: unexpected work-tree changes\n%s\n' "$unexpected" >&2
-        die "commit or stash everything except 'index', then retry"
+        die "commit or stash everything except 'index' first; edits under docs/ and tools/ count as unexpected too, because a refresh commit carries only 'index'"
     fi
     [ -z "$dirty" ] || say "note: 'index' already has uncommitted changes; they are the baseline"
 fi
