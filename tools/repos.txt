@@ -5,16 +5,14 @@
 #
 # The tag column mirrors index/index: after refreshing the index, run
 # tools/sync-repos-tags.sh (or --check) instead of editing tags by hand.
-hal|v0.1.0|ct.pkg|The hal contract package: Uart, Gpio, Clock, Log
-hal-posix|v0.1.0|ct.pkg|POSIX (macOS / Linux) binding for the hal contract package
-std|v0.2.0|ct.pkg|The CT standard library moved out of ct-lang: str, io, fs, utf8, vec, map, arena, test, num, math
-zlib|v0.1.0|ct.pkg|The zlib (deflate/inflate) mapping package
-png|v0.2.0|ct.pkg|A libpng mapping package
-net-posix|v0.2.0|ct.pkg|A minimal TCP socket mapping for CT programs
-sqlite|v0.1.0|ct.pkg|SQLite mapping package
-sql|v0.2.0|ct.pkg|A dialect-neutral SQL builder
-hashmap|v0.1.0|ct.pkg|A dynamically growing hash map (tidwall/hashmap.c) with copied entries
-dict|v0.1.0|ct.pkg|The Redis 7.2.x dict: pointer-only entries, incremental rehash, safe iterator
-json|v0.1.0|ct.pkg|JSON text <-> tree mapped onto a bundled cJSON 1.7.19
-curl|v0.1.0|ct.pkg|The libcurl (easy handle) mapping package
+std|v0.3.2|ct.pkg|The CT standard library moved out of ct-lang: str, io, fs, utf8, vec, map, arena, test, num, math
+http|v0.2.1|ct.pkg|Thin streaming HTTP client for CT, built on libcurl
+sse|v0.13.0|ct.pkg|WHATWG-compliant Server-Sent Events parser for CT
+llm-sse|v0.1.0|ct.pkg|OpenAI/Anthropic-compatible streaming chat for CT, built on http + sse + json
+process|v0.1.1|ct.pkg|Subprocess execution for CT with streaming stdout/stderr capture and timeout enforcement
+token|v0.1.1|ct.pkg|Rough token budget estimation for CT (heuristics, not a tokenizer)
+json|v0.6.1|ct.pkg|JSON text <-> tree mapped onto a bundled cJSON
+fsguard|v0.5.0|ct.pkg|A policy-aware filesystem layer for CT: path sandboxing, chunked reads, structured errors
+rill-dsl|v0.23.1|ct.pkg|A minimal, token-efficient scripting DSL for LLM-generated tool orchestration
+nexcore|v0.14.1|ct.pkg|Cross-platform core reuse framework: business logic in CT compiled to a C ABI library
 index|-|index|The official ct-pkg package index

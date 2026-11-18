@@ -1,0 +1,53 @@
+name: gates
+
+# The gate scripts are workspace-wide: they walk every `*/ct.pkg` two levels up
+# from `index/tools/`, which only exists when the package repositories are
+# checked out beside this one. This workflow rebuilds that layout in CI so the
+# layout, mapping-host and manifest-drift checks do not depend on a developer's
+# local staging directory.
+#
+# `ct pkg check` is not run here: it needs a CT compiler binary, which this
+# repository does not build. `tools/package.sh check` runs it locally when a
+# `ct` (or `ct-ast`) is on PATH.
+on:
+  schedule:
+    - cron: '0 19 * * *'   # 03:00 Asia/Shanghai, after the nightly index pass
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout the index repository
+        uses: actions/checkout@v4
+        with:
+          path: ws/index
+
+      - name: clone every package in packages.txt
+        run: |
+          set -eu
+          mkdir -p ws
+          while IFS=' ' read -r name url rest; do
+            case "$name" in
+              '' | '#'*) continue ;;
+            esac
+            [ -n "${url:-}" ] || continue
+            echo "cloning $name <- $url"
+            git clone --quiet --depth 1 "$url" "ws/$name"
+          done < ws/index/packages.txt
+
+      - name: layout gate (unit directory == namespace)
+        env:
+          CT_PKG_ROOT: ${{ github.workspace }}/ws
+        run: bash ws/index/tools/check-layout.sh
+
+      - name: char-host gate (method-name uniqueness per host)
+        env:
+          CT_PKG_ROOT: ${{ github.workspace }}/ws
+        run: bash ws/index/tools/check-char-host.sh
+
+      - name: manifest drift (tools/repos.txt tag column)
+        run: bash ws/index/tools/sync-repos-tags.sh --check ws/index/index ws/index/tools/repos.txt

@@ -2,18 +2,36 @@
 #
 # refresh-index.sh - rebuild `index` from `packages.txt`.
 #
-# For every `name url` pair the highest `v*` tag is resolved, the tag is
-# cloned, and `gen-index.sh` writes its line. No arguments means "refresh the
-# work tree only"; git operations are opt-in:
+# For every `name url` pair the highest `v*` tag is resolved, the repository is
+# cloned once, the tag is checked out and `gen-index.sh` writes its six-field
+# line. No arguments means "refresh the work tree only"; git operations are
+# opt-in:
 #
-#   (no flags)   rewrite ./index, leave it uncommitted
-#   --dry-run    print per-package changes and a unified diff; write nothing
-#   --commit     rewrite ./index and commit it (the commit contains only `index`)
-#   --push       implies --commit, then push HEAD:main over SSH and verify
+#   (no flags)     rewrite ./index, leave it uncommitted
+#   --dry-run      print per-package changes and a unified diff; write nothing
+#   --commit       rewrite ./index and commit it (the commit contains only it)
+#   --push         implies --commit, then push HEAD:main over SSH and verify
+#   --all-tags     index every `v*` tag instead of only the newest one
+#   --only <names> rebuild only these comma-separated packages; every other
+#                  existing row is preserved (used by tools/package.sh so one
+#                  release does not depend on the rest of the ecosystem)
+#   --allow-rewrite  accept a different digest for an already published
+#                    name+version (tags are immutable; this is an escape hatch)
+#
+# Two guards borrowed from the consumer contract:
+#
+#   * a line is only written for a tag whose `ct.pkg` carries `publisher` and
+#     `ns-root` (the shared-store identity), and whose tag equals `v<version>`;
+#   * all versions of one package must share a publisher: the newest tag's
+#     publisher wins and older tags that disagree are reported and skipped;
+#   * an existing `name version` row may not change its digest. A moved tag
+#     means the tree was rewritten, and consumers holding a lock would diverge.
 #
 # Tag selection is done with awk instead of GNU `sort -V`, so the script also
 # runs on macOS. A repository without a `v*` tag is reported and the run exits
-# 1 without touching `index`.
+# 1 without touching `index`; an older tag that fails validation in
+# `--all-tags` mode is reported and skipped, while the newest tag failing is
+# always fatal.
 set -eu
 
 here=$(cd "$(dirname "$0")/.." && pwd)
@@ -21,27 +39,44 @@ here=$(cd "$(dirname "$0")/.." && pwd)
 usage() {
     cat <<'EOF'
 usage: tools/refresh-index.sh [--dry-run] [--commit] [--push]
+                              [--all-tags] [--allow-rewrite]
 
-  (no flags)  refresh ./index only
-  --dry-run   show the per-package changes and diff; do not write anything
-  --commit    refresh and commit `index` (nothing else is staged)
-  --push      refresh, commit, push HEAD:main over SSH, then verify with
-              `git ls-remote`; implies --commit, never forces
+  (no flags)     refresh ./index only
+  --dry-run      show the per-package changes and diff; do not write anything
+  --commit       refresh and commit `index` (nothing else is staged)
+  --push         refresh, commit, push HEAD:main over SSH, then verify with
+                 `git ls-remote`; implies --commit, never forces
+  --all-tags     index every `v*` tag, not just the newest one
+  --only <names> rebuild only these comma-separated packages, keeping the
+                 other rows untouched
+  --allow-rewrite  allow an already indexed name+version to change digest
 
-Push target: $INDEX_PUSH_URL (default git@github.com:ct-pkg/index.git).
-Readback / fast-forward check: $INDEX_READ_URL (default `git remote get-url origin`).
-Both env overrides exist for testing against a local bare repository.
+Environment:
+  INDEX_PACKAGES   input list (default <repo>/packages.txt)
+  INDEX_FILE       output file (default <repo>/index)
+  INDEX_PUSH_URL   push target (default git@github.com:ct-pkg/index.git)
+  INDEX_READ_URL   readback URL (default `git remote get-url origin`)
 EOF
 }
 
 commit=0
 push=0
 dry=0
+all_tags=0
+allow_rewrite=0
+only=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --commit) commit=1 ;;
         --push) commit=1; push=1 ;;
         --dry-run) dry=1 ;;
+        --all-tags) all_tags=1 ;;
+        --allow-rewrite) allow_rewrite=1 ;;
+        --only)
+            [ $# -ge 2 ] || { usage >&2; exit 2; }
+            only=$(printf '%s' "$2" | tr ',' ' ')
+            shift
+            ;;
         -h | --help) usage; exit 0 ;;
         *)
             printf 'refresh-index: unknown option %s\n\n' "$1" >&2
@@ -55,6 +90,17 @@ done
 die() { printf 'refresh-index: %s\n' "$*" >&2; exit 1; }
 say() { printf '%s\n' "$*"; }
 
+packages=${INDEX_PACKAGES:-$here/packages.txt}
+index_file=${INDEX_FILE:-$here/index}
+case "$index_file" in
+    /*) ;;
+    *) index_file="$here/$index_file" ;;
+esac
+index_rel=$index_file
+case "$index_file" in
+    "$here"/*) index_rel=${index_file#"$here"/} ;;
+esac
+
 origin_url=$(git -C "$here" remote get-url origin 2>/dev/null || true)
 read_url=${INDEX_READ_URL:-$origin_url}
 push_url=${INDEX_PUSH_URL:-git@github.com:ct-pkg/index.git}
@@ -64,13 +110,14 @@ push_url=${INDEX_PUSH_URL:-git@github.com:ct-pkg/index.git}
 # ---------------------------------------------------------------------------
 if [ "$dry" = 0 ]; then
     [ -d "$here/.git" ] || die "$here is not a git work tree"
+    [ -f "$packages" ] || die "no package list at $packages"
     dirty=$(git -C "$here" status --porcelain --untracked-files=all)
-    unexpected=$(printf '%s\n' "$dirty" | awk 'NF && $NF != "index"')
+    unexpected=$(printf '%s\n' "$dirty" | awk -v keep="$index_rel" 'NF && $NF != keep')
     if [ -n "$unexpected" ]; then
         printf 'refresh-index: refusing to run: unexpected work-tree changes\n%s\n' "$unexpected" >&2
-        die "commit or stash everything except 'index' first; edits under docs/ and tools/ count as unexpected too, because a refresh commit carries only 'index'"
+        die "commit or stash everything except the index file first; edits under docs/ and tools/ count as unexpected too, because a refresh commit carries only the index"
     fi
-    [ -z "$dirty" ] || say "note: 'index' already has uncommitted changes; they are the baseline"
+    [ -z "$dirty" ] || say "note: the index file already has uncommitted changes; they are the baseline"
 fi
 
 if [ "$push" = 1 ] && [ "$dry" = 0 ]; then
@@ -83,31 +130,30 @@ work=$(mktemp -d "${TMPDIR:-/tmp}/refresh-index.XXXXXX")
 trap 'rm -rf "$work"' EXIT HUP INT TERM
 
 old="$work/index.old"
-if [ -f "$here/index" ]; then
-    cp "$here/index" "$old"
+if [ -f "$index_file" ]; then
+    cp "$index_file" "$old"
 else
     : >"$old"
 fi
 new="$work/index.new"
 : >"$new"
 
-# ---------------------------------------------------------------------------
-# Rebuild into $new. Nothing under $here is written until every tag resolved.
-# ---------------------------------------------------------------------------
-skipped=0
-while IFS=' ' read -r name url rest; do
-    case "$name" in
-        '' | '#'*) continue ;;
-    esac
-    [ -n "${url:-}" ] || continue
+# `--only` keeps every row of the packages that are not being rebuilt, so a
+# single release can refresh its own line without depending on the rest of the
+# ecosystem being migrated.
+if [ -n "$only" ]; then
+    awk -v only="$only" '
+        BEGIN { n = split(only, a, " "); for (i = 1; i <= n; i++) want[a[i]] = 1 }
+        NF >= 5 && !($1 in want)
+    ' "$old" >"$new"
+fi
+skipped_tags="$work/skipped"
+: >"$skipped_tags"
 
-    if ! refs=$(git ls-remote --tags --refs "$url" 'v*' 2>"$work/ls.err"); then
-        cat "$work/ls.err" >&2
-        die "cannot list tags from $url"
-    fi
-    # Highest semver tag. `ls-remote` prints "<sha>\t<ref>", so take $2.
-    # No `sort -V`: BSD sort on macOS does not have it.
-    tag=$(printf '%s\n' "$refs" | awk '
+# semver-descending `v*` tags. `ls-remote` prints "<sha>\t<ref>", so take $2.
+# No `sort -V`: BSD sort on macOS does not have it.
+sort_tags() {
+    awk '
         function key(s,   a, n, i, k) {
             sub(/^v/, "", s)
             n = split(s, a, ".")
@@ -118,74 +164,165 @@ while IFS=' ' read -r name url rest; do
         NF {
             ref = $2
             sub(/^refs\/tags\//, "", ref)
-            if (ref !~ /^v/) next
-            k = key(ref)
-            if (best == "" || k > bk) { best = ref; bk = k }
+            if (ref !~ /^v[0-9]/) next
+            printf "%015.0f %s\n", key(ref), ref
         }
-        END { if (best != "") print best }
-    ')
-    if [ -z "$tag" ]; then
-        say "skip     $name: no v* tag at $url"
-        skipped=$((skipped + 1))
-        continue
+    ' | sort -rn | awk '{ print $2 }'
+}
+
+# ---------------------------------------------------------------------------
+# Rebuild into $new. Nothing under the work tree is written until every newest
+# tag validated and no published digest moved.
+# ---------------------------------------------------------------------------
+fatal=0
+missing=0
+while IFS=' ' read -r name url rest; do
+    case "$name" in
+        '' | '#'*) continue ;;
+    esac
+    [ -n "${url:-}" ] || continue
+    if [ -n "$only" ]; then
+        case " $only " in
+            *" $name "*) ;;
+            *) continue ;;
+        esac
     fi
 
-    # `clone --branch <tag>` warns ("is not a commit") when the tag is annotated
-    # and only checks out lightweight ones cleanly, so clone the default branch
-    # and check the tag out instead: `checkout` peels both shapes.
+    if ! refs=$(git ls-remote --tags --refs "$url" 'v*' 2>"$work/ls.err"); then
+        cat "$work/ls.err" >&2
+        die "cannot list tags from $url"
+    fi
+    tags=$(printf '%s\n' "$refs" | sort_tags)
+    if [ -z "$tags" ]; then
+        say "skip     $name: no v* tag at $url"
+        missing=$((missing + 1))
+        continue
+    fi
+    newest=$(printf '%s\n' "$tags" | head -n 1)
+    if [ "$all_tags" = 1 ]; then
+        selected=$tags
+    else
+        selected=$newest
+    fi
+
+    # One clone per repository, then checkout each tag. `clone --branch <tag>`
+    # warns on annotated tags, and `checkout tags/<tag>` peels both shapes.
     rm -rf "$work/$name"
     if ! git clone --quiet "$url" "$work/$name" 2>"$work/clone.err"; then
         cat "$work/clone.err" >&2
         die "clone failed for $name ($url)"
     fi
-    if ! git -C "$work/$name" -c advice.detachedHead=false checkout --quiet "tags/$tag" \
-            2>"$work/checkout.err"; then
-        cat "$work/checkout.err" >&2
-        die "checkout of $name $tag failed"
-    fi
-    if ! "$here/tools/gen-index.sh" "$new" "$work/$name" "$url" "$tag" >/dev/null \
-            2>"$work/gen.err"; then
-        cat "$work/gen.err" >&2
-        die "gen-index.sh failed for $name $tag"
-    fi
-    say "fetched  $name $tag"
-done <"$here/packages.txt"
 
-if [ "$skipped" -gt 0 ]; then
-    say "aborted: $skipped package(s) have no v* tag; index left untouched"
+    pkg_pub=""
+    for tag in $selected; do
+        if ! git -C "$work/$name" -c advice.detachedHead=false checkout --quiet "tags/$tag" \
+                2>"$work/checkout.err"; then
+            cat "$work/checkout.err" >&2
+            die "checkout of $name $tag failed"
+        fi
+        one="$work/one.index"
+        : >"$one"
+        if ! "$here/tools/gen-index.sh" "$one" "$work/$name" "$url" "$tag" >/dev/null \
+                2>"$work/gen.err"; then
+            if [ "$tag" = "$newest" ]; then
+                printf 'refresh-index: %s %s: %s\n' "$name" "$tag" \
+                    "$(head -n 1 "$work/gen.err")" >&2
+                fatal=$((fatal + 1))
+            else
+                printf '%s %s: %s\n' "$name" "$tag" "$(head -n 1 "$work/gen.err")" \
+                    >>"$skipped_tags"
+            fi
+            continue
+        fi
+        pub=$(awk '{ print $3 }' "$one")
+        if [ -n "$pkg_pub" ] && [ "$pub" != "$pkg_pub" ]; then
+            printf '%s %s: publisher %s differs from %s of the newest tag\n' \
+                "$name" "$tag" "$pub" "$pkg_pub" >>"$skipped_tags"
+            continue
+        fi
+        [ -n "$pkg_pub" ] || pkg_pub=$pub
+        cat "$one" >>"$new"
+        say "fetched  $name $tag"
+    done
+done <"$packages"
+
+if [ "$missing" -gt 0 ]; then
+    say "aborted: $missing package(s) have no v* tag; index left untouched"
     exit 1
+fi
+if [ "$fatal" -gt 0 ]; then
+    say "aborted: $fatal newest tag(s) failed validation; index left untouched"
+    exit 1
+fi
+if [ -s "$skipped_tags" ]; then
+    say "note: older tags skipped (missing shared-store identity or drifted version):"
+    sed 's/^/        /' "$skipped_tags"
+fi
+
+# ---------------------------------------------------------------------------
+# Immutability: an indexed name+version may not change its digest.
+# ---------------------------------------------------------------------------
+rewritten=$(awk '
+    FNR == NR {
+        if (NF >= 6)      { k = $1 " " $2; t[k] = $5; h[k] = $6 }
+        else if (NF >= 5) { k = $1 " " $2; t[k] = $4; h[k] = $5 }
+        next
+    }
+    NF >= 6 {
+        k = $1 " " $2
+        if ((k in h) && h[k] != $6) printf "%s %s %s -> %s\n", $1, $2, h[k], $6
+    }
+' "$old" "$new")
+
+if [ -n "$rewritten" ]; then
+    printf 'refresh-index: an already indexed version changed its digest\n%s\n' "$rewritten" >&2
+    if [ "$allow_rewrite" = 1 ]; then
+        say "note: --allow-rewrite given; accepting the new digest"
+    else
+        die "tags are immutable: publish a new version instead (or pass --allow-rewrite on purpose)"
+    fi
 fi
 
 # ---------------------------------------------------------------------------
 # Report old -> new before touching the work tree.
 # ---------------------------------------------------------------------------
+normalize() {
+    awk '
+        NF >= 6 { print $1, $2, $3, $5, $6; next }
+        NF >= 5 { print $1, $2, "-", $4, $5 }
+    ' "$1"
+}
+normalize "$old" >"$work/old.norm"
+normalize "$new" >"$work/new.norm"
+
 report="$work/report"
-{ cat "$old"; printf '__NEW__\n'; cat "$new"; } | awk '
+{ cat "$work/old.norm"; printf '__NEW__\n'; cat "$work/new.norm"; } | awk '
     $0 == "__NEW__" { phase = 1; next }
     phase == 0 && NF >= 5 {
-        ov[$1] = $2; ot[$1] = $4; oh[$1] = $5; seen[$1] = 1
+        k = $1 " " $2
+        op[k] = $3; ot[k] = $4; oh[k] = $5; seen[k] = 1
         next
     }
     phase == 1 && NF >= 5 {
-        n = $1; nn[n] = 1
-        if (!(n in seen)) {
-            printf "added    %-10s %s %s %s\n", n, $2, $4, $5
+        k = $1 " " $2; nn[k] = 1
+        if (!(k in seen)) {
+            printf "added    %-10s %-7s %s %s\n", $1, $2, $4, $5
             added++
             next
         }
-        if (ov[n] != $2 || ot[n] != $4 || oh[n] != $5) {
-            printf "changed  %-10s %s -> %s\n", n, ov[n], $2
-            if (ot[n] != $4) printf "         %-10s tag %s -> %s\n", "", ot[n], $4
-            if (oh[n] != $5) printf "         %-10s sha %s -> %s\n", "", oh[n], $5
+        if (ot[k] != $4 || oh[k] != $5 || op[k] != $3) {
+            printf "changed  %-10s %s\n", $1, $2
+            if (op[k] != $3) printf "         %-10s publisher %s -> %s\n", "", op[k], $3
+            if (ot[k] != $4) printf "         %-10s tag %s -> %s\n", "", ot[k], $4
+            if (oh[k] != $5) printf "         %-10s sha %s -> %s\n", "", oh[k], $5
             changed++
         } else {
-            printf "same     %-10s %s %s\n", n, $2, $4
             same++
         }
     }
     END {
-        for (n in seen) {
-            if (!(n in nn)) { printf "removed  %s\n", n; removed++ }
+        for (k in seen) {
+            if (!(k in nn)) { split(k, p, " "); printf "removed  %s %s\n", p[1], p[2]; removed++ }
         }
         printf "summary: %d changed, %d added, %d removed, %d unchanged\n", changed, added, removed, same
     }
@@ -208,9 +345,9 @@ fi
 # ---------------------------------------------------------------------------
 if [ "$dry" = 1 ]; then
     lines=$(wc -l <"$new" | tr -d ' ')
-    say "[dry-run] would write index ($lines lines); no files were modified"
+    say "[dry-run] would write $index_file ($lines lines); no files were modified"
     if [ "$changed" = 1 ]; then
-        say "[dry-run] would commit 'index'"
+        say "[dry-run] would commit the index file"
     else
         say "[dry-run] would not commit (index unchanged)"
     fi
@@ -227,20 +364,20 @@ fi
 # Write, commit, push.
 # ---------------------------------------------------------------------------
 if [ "$changed" = 1 ]; then
-    cp "$new" "$here/index"
+    cp "$new" "$index_file"
     if [ "$commit" = 0 ]; then
         say "index updated; run with --commit to commit it"
     fi
 fi
 
 if [ "$commit" = 1 ]; then
-    if git -C "$here" diff --quiet -- index; then
+    if git -C "$here" diff --quiet -- "$index_rel"; then
         say "commit: index already matches HEAD; nothing to commit"
     else
-        names=$(awk '/^changed  / { print $2 }' "$report" | tr '\n' ' ' | sed 's/ *$//')
+        names=$(awk '/^changed  / { print $2 }' "$report" | sort -u | tr '\n' ' ' | sed 's/ *$//')
         msg="index: refresh"
         [ -z "$names" ] || msg="index: refresh $names"
-        git -C "$here" add index
+        git -C "$here" add -- "$index_rel"
         git -C "$here" commit --quiet -m "$msg" \
             || die "git commit failed"
         say "commit: $(git -C "$here" rev-parse --short HEAD) $msg"

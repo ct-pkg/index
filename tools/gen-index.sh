@@ -4,18 +4,23 @@
 #
 # Usage:  tools/gen-index.sh <index-file> <package-dir> <git-url> <tag>
 #
-# The line format is the one `ct get --index` reads:
+# The line format is the one `ct get --index` reads (six fields):
 #
-#     name version git-url tag sha256:<64 lowercase hex>
+#     name version publisher git-url tag sha256:<64 lowercase hex>
 #
-# The digest must be the one `ct get` computes for the vendored tree, so it is
+# `publisher` and `ns-root` are the identity keys the shared store requires
+# (`ct` v0.54.0+). A package without them cannot be installed, so this script
+# refuses to write a line for it instead of producing one that fails later at
+# `pkg_store_commit`.
+#
+# The digest must be the one `ct get` computes for the stored tree, so it is
 # the SHA-256 of one stream: for every regular file under the package, sorted
 # by its relative path, `path` + newline + the file's bytes. `.git`, `vendor`
 # and `.ctcache` are not part of a package and are skipped (Pkg.h.ct
 # `sha_collect`).
 #
-# The package at `tag` and the working tree must be byte-identical; the index
-# is only honest if the tag names the same content the digest covers.
+# The tag must be `v<version>` (the only shape `refresh-index.sh` considers),
+# so a drifted manifest is rejected here rather than at the consumer.
 set -eu
 
 if [ $# -ne 4 ]; then
@@ -28,17 +33,55 @@ dir=$2
 url=$3
 tag=$4
 
+die() { printf '%s: %s\n' "$0" "$*" >&2; exit 1; }
+
 if [ ! -f "$dir/ct.pkg" ]; then
     echo "$0: no ct.pkg in '$dir'" >&2
     exit 1
 fi
 
-name=$(awk -F= '/^name[ 	]*=/{v=$2; gsub(/^[ 	]+|[ 	]+$/, "", v); print v; exit}' "$dir/ct.pkg")
-version=$(awk -F= '/^version[ 	]*=/{v=$2; gsub(/^[ 	]+|[ 	]+$/, "", v); print v; exit}' "$dir/ct.pkg")
-if [ -z "$name" ] || [ -z "$version" ]; then
-    echo "$0: '$dir/ct.pkg' needs name and version" >&2
-    exit 1
-fi
+manifest_value() {
+    awk -F= -v k="$1" '
+        {
+            key = $1
+            gsub(/^[ \t]+|[ \t]+$/, "", key)
+            if (key != k) next
+            v = $0
+            sub(/^[^=]*=/, "", v)
+            gsub(/^[ \t]+|[ \t]+$/, "", v)
+            print v
+            exit
+        }
+    ' "$dir/ct.pkg"
+}
+
+name=$(manifest_value name)
+version=$(manifest_value version)
+publisher=$(manifest_value publisher)
+nsroot=$(manifest_value ns-root)
+
+[ -n "$name" ] || die "'$dir/ct.pkg' is missing 'name'"
+[ -n "$version" ] || die "'$dir/ct.pkg' is missing 'version'"
+[ -n "$publisher" ] || die "'$dir/ct.pkg' is missing 'publisher' (required since ct v0.54)"
+[ "$publisher" != local ] || die "'$dir/ct.pkg' uses the reserved publisher 'local'"
+[ -n "$nsroot" ] || die "'$dir/ct.pkg' is missing 'ns-root' (required since ct v0.54)"
+case "$nsroot" in
+    /*) die "'$dir/ct.pkg' has an absolute ns-root '$nsroot'" ;;
+esac
+case "$nsroot" in
+    *..*) die "'$dir/ct.pkg' has an ns-root '$nsroot' containing '..'" ;;
+esac
+[ -d "$dir/$nsroot" ] || die "'$dir/ct.pkg' ns-root '$nsroot' is not a directory"
+
+[ "$tag" = "v$version" ] \
+    || die "'$dir/ct.pkg' says version '$version' but the tag is '$tag' (expected 'v$version')"
+
+case "$publisher" in
+    */*) die "publisher '$publisher' must not contain '/'" ;;
+esac
+case "$name" in
+    *' '* | *'/'*) die "name '$name' must not contain whitespace or '/'" ;;
+esac
 
 if command -v sha256sum >/dev/null 2>&1; then
     hash() { sha256sum | awk '{ print $1 }'; }
@@ -60,7 +103,8 @@ digest=$(
 touch "$index"
 tmp="$index.tmp.$$"
 awk -v n="$name" -v v="$version" '$1 != n || $2 != v' "$index" >"$tmp"
-printf '%s %s %s %s sha256:%s\n' "$name" "$version" "$url" "$tag" "$digest" >>"$tmp"
+printf '%s %s %s %s %s sha256:%s\n' \
+    "$name" "$version" "$publisher" "$url" "$tag" "$digest" >>"$tmp"
 mv "$tmp" "$index"
 
-echo "$name $version $tag sha256:$digest"
+echo "$name $version $publisher $tag sha256:$digest"

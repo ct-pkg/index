@@ -3,6 +3,11 @@ name: index
 # Rebuild `index` from the package repositories named in `packages.txt`.
 # The tag a package publishes is the only trigger: the nightly run picks up a
 # new `v*` tag on the next pass, and a release can dispatch the workflow by hand.
+#
+# `--all-tags` keeps one row per released version, so explicit ranges such as
+# `std@^0.3.0` resolve against the same index. An older tag that lacks the
+# shared-store identity (`publisher` / `ns-root`) is reported and skipped; a
+# newest tag that fails validation aborts the run and leaves `index` untouched.
 on:
   schedule:
     - cron: '0 18 * * *'   # 02:00 Asia/Shanghai
@@ -22,16 +27,19 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: regenerate
-        run: sh tools/refresh-index.sh
+        run: sh tools/refresh-index.sh --all-tags
+
+      - name: sync the manifest tag column
+        run: bash tools/sync-repos-tags.sh
 
       - name: commit
         run: |
           git config user.name "ct-pkg index bot"
           git config user.email "ct-pkg@users.noreply.github.com"
-          if git diff --quiet index; then
-            echo "index is unchanged"
-          else
-            git add index
-            git commit -m "index: refresh the Wave 1 entries"
-            git push
+          if git diff --quiet index tools/repos.txt; then
+            echo "index and repos.txt are unchanged"
+            exit 0
           fi
+          git add index tools/repos.txt
+          git commit -m "index: refresh the released versions"
+          git push

@@ -1,19 +1,20 @@
-# The ct-pkg packages known to `ct-pkg/index`, one `name url` pair per line.
+# The ct-pkg repositories known to `ct-pkg/index`, one `name url` pair per line.
+# The first column is the repository name; the package name inside `ct.pkg` may
+# differ (the `rill-dsl` repository publishes the `rill` package).
 #
-# `tools/refresh-index.sh` resolves each repository's highest `v*` tag, clones
-# it and lets `tools/gen-index.sh` write one index line. A comment line or a
-# blank line is skipped. Versions are not listed here: the remote tag decides.
-# As of 2026-11-08 std, sql, png and net-posix are at v0.2.0; the other eight
-# are at v0.1.0.
-hal https://github.com/ct-pkg/hal
-hal-posix https://github.com/ct-pkg/hal-posix
+# `tools/refresh-index.sh` resolves each repository's `v*` tags (all of them
+# with --all-tags), clones the repository once and lets `tools/gen-index.sh`
+# write one six-field line per version. A comment line or a blank line is
+# skipped. Versions and publishers are not listed here: the remote tag and the
+# package's own `ct.pkg` decide. `publisher` must be the same for every tag of
+# one package; the newest tag defines it.
 std https://github.com/ct-pkg/std
-zlib https://github.com/ct-pkg/zlib
-png https://github.com/ct-pkg/png
-net-posix https://github.com/ct-pkg/net-posix
-sqlite https://github.com/ct-pkg/sqlite
-sql https://github.com/ct-pkg/sql
+http https://github.com/ct-pkg/http
+sse https://github.com/ct-pkg/sse
+llm-sse https://github.com/ct-pkg/llm-sse
+process https://github.com/ct-pkg/process
+token https://github.com/ct-pkg/token
 json https://github.com/ct-pkg/json
-curl https://github.com/ct-pkg/curl
-hashmap https://github.com/ct-pkg/hashmap
-dict https://github.com/ct-pkg/dict
+fsguard https://github.com/ct-pkg/fsguard
+rill-dsl https://github.com/ct-pkg/rill-dsl
+nexcore https://github.com/ct-pkg/nexcore

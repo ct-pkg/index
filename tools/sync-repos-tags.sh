@@ -40,9 +40,19 @@ manifest="${2:-$here/repos.txt}"
 
 # One `name|old|new` line per drift.
 drift=$(awk '
+    function vkey(s,   a, n, i, k) {
+        n = split(s, a, ".")
+        k = 0
+        for (i = 1; i <= 3; i++) k = k * 1000000 + (a[i] + 0)
+        return k
+    }
     FNR == NR {
         n = split($0, a, " ")
-        if (n >= 5 && a[1] !~ /^#/) idx[a[1]] = a[4]
+        if (n >= 6 && a[1] !~ /^#/) { tag = a[5]; ver = a[2] }
+        else if (n >= 5 && a[1] !~ /^#/) { tag = a[4]; ver = a[2] }
+        else next
+        k = vkey(ver)
+        if (!(a[1] in idx) || k > idxkey[a[1]]) { idx[a[1]] = tag; idxkey[a[1]] = k }
         next
     }
     $0 ~ /^#/ { next }
@@ -89,9 +99,19 @@ fi
 tmp="$manifest.tmp.$$"
 trap 'rm -f "$tmp"' EXIT HUP INT TERM
 awk '
+    function vkey(s,   a, n, i, k) {
+        n = split(s, a, ".")
+        k = 0
+        for (i = 1; i <= 3; i++) k = k * 1000000 + (a[i] + 0)
+        return k
+    }
     FNR == NR {
         n = split($0, a, " ")
-        if (n >= 5 && a[1] !~ /^#/) idx[a[1]] = a[4]
+        if (n >= 6 && a[1] !~ /^#/) { tag = a[5]; ver = a[2] }
+        else if (n >= 5 && a[1] !~ /^#/) { tag = a[4]; ver = a[2] }
+        else next
+        k = vkey(ver)
+        if (!(a[1] in idx) || k > idxkey[a[1]]) { idx[a[1]] = tag; idxkey[a[1]] = k }
         next
     }
     $0 ~ /^#/ { print; next }

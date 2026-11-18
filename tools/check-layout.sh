@@ -23,8 +23,9 @@ set -uo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
 # This script lives in `index/tools/`; the packages sit two levels up, in the
-# ct-pkg workspace root.
-repo="$(cd "$here/../.." && pwd)"
+# ct-pkg workspace root. `CT_PKG_ROOT` overrides that (CI checks out the
+# packages somewhere else).
+repo="${CT_PKG_ROOT:-$(cd "$here/../.." && pwd)}"
 
 if [ $# -gt 0 ]; then
     packages=()
