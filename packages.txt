@@ -8,6 +8,10 @@
 # skipped. Versions and publishers are not listed here: the remote tag and the
 # package's own `ct.pkg` decide. `publisher` must be the same for every tag of
 # one package; the newest tag defines it.
+#
+# Repositories without `publisher` / `ns-root` in their tagged `ct.pkg` cannot
+# be regenerated yet. Their existing index rows are kept by
+# `refresh-index.sh --only`; refresh them here once they publish the identity.
 std https://github.com/ct-pkg/std
 http https://github.com/ct-pkg/http
 sse https://github.com/ct-pkg/sse
@@ -18,3 +22,13 @@ json https://github.com/ct-pkg/json
 fsguard https://github.com/ct-pkg/fsguard
 rill-dsl https://github.com/ct-pkg/rill-dsl
 nexcore https://github.com/ct-pkg/nexcore
+hal https://github.com/ct-pkg/hal
+hal-posix https://github.com/ct-pkg/hal-posix
+zlib https://github.com/ct-pkg/zlib
+png https://github.com/ct-pkg/png
+net-posix https://github.com/ct-pkg/net-posix
+sqlite https://github.com/ct-pkg/sqlite
+sql https://github.com/ct-pkg/sql
+curl https://github.com/ct-pkg/curl
+hashmap https://github.com/ct-pkg/hashmap
+dict https://github.com/ct-pkg/dict

@@ -48,11 +48,22 @@ drift=$(awk '
     }
     FNR == NR {
         n = split($0, a, " ")
-        if (n >= 6 && a[1] !~ /^#/) { tag = a[5]; ver = a[2] }
-        else if (n >= 5 && a[1] !~ /^#/) { tag = a[4]; ver = a[2] }
+        if (n >= 6 && a[1] !~ /^#/) { tag = a[5]; ver = a[2]; url = a[4] }
+        else if (n >= 5 && a[1] !~ /^#/) { tag = a[4]; ver = a[2]; url = a[3] }
         else next
         k = vkey(ver)
         if (!(a[1] in idx) || k > idxkey[a[1]]) { idx[a[1]] = tag; idxkey[a[1]] = k }
+        # The manifest names repositories; the index names packages (the
+        # rill-dsl repository publishes `rill`). Match both, so a rename on
+        # either side still finds its row.
+        repo = url
+        sub(/\/+$/, "", repo)
+        sub(/^.*\//, "", repo)
+        sub(/\.git$/, "", repo)
+        if (repo != "" && (!(repo in idx) || k > idxkey[repo])) {
+            idx[repo] = tag
+            idxkey[repo] = k
+        }
         next
     }
     $0 ~ /^#/ { next }
@@ -68,6 +79,12 @@ unconfirmed=$(awk '
     FNR == NR {
         n = split($0, a, " ")
         if (n >= 5 && a[1] !~ /^#/) idx[a[1]] = 1
+        if (n >= 6) { url = a[4] } else if (n >= 5) { url = a[3] } else { next }
+        repo = url
+        sub(/\/+$/, "", repo)
+        sub(/^.*\//, "", repo)
+        sub(/\.git$/, "", repo)
+        if (repo != "") idx[repo] = 1
         next
     }
     $0 ~ /^#/ { next }
@@ -107,11 +124,22 @@ awk '
     }
     FNR == NR {
         n = split($0, a, " ")
-        if (n >= 6 && a[1] !~ /^#/) { tag = a[5]; ver = a[2] }
-        else if (n >= 5 && a[1] !~ /^#/) { tag = a[4]; ver = a[2] }
+        if (n >= 6 && a[1] !~ /^#/) { tag = a[5]; ver = a[2]; url = a[4] }
+        else if (n >= 5 && a[1] !~ /^#/) { tag = a[4]; ver = a[2]; url = a[3] }
         else next
         k = vkey(ver)
         if (!(a[1] in idx) || k > idxkey[a[1]]) { idx[a[1]] = tag; idxkey[a[1]] = k }
+        # The manifest names repositories; the index names packages (the
+        # rill-dsl repository publishes `rill`). Match both, so a rename on
+        # either side still finds its row.
+        repo = url
+        sub(/\/+$/, "", repo)
+        sub(/^.*\//, "", repo)
+        sub(/\.git$/, "", repo)
+        if (repo != "" && (!(repo in idx) || k > idxkey[repo])) {
+            idx[repo] = tag
+            idxkey[repo] = k
+        }
         next
     }
     $0 ~ /^#/ { print; next }
