@@ -137,16 +137,16 @@ else
 fi
 new="$work/index.new"
 : >"$new"
+built="$work/index.built"
+built_names="$work/index.built.names"
+: >"$built"
+: >"$built_names"
 
-# `--only` keeps every row of the packages that are not being rebuilt, so a
-# single release can refresh its own line without depending on the rest of the
-# ecosystem being migrated.
-if [ -n "$only" ]; then
-    awk -v only="$only" '
-        BEGIN { n = split(only, a, " "); for (i = 1; i <= n; i++) want[a[i]] = 1 }
-        NF >= 5 && !($1 in want)
-    ' "$old" >"$new"
-fi
+# With `--only` the selected rows are collected in `$built` first; rows of
+# every other package are then copied from the current index. Selection is by
+# repository name, while preservation must use the package name (the
+# `rill-dsl` repository publishes `rill`), so the two lists are assembled
+# separately after the loop.
 skipped_tags="$work/skipped"
 : >"$skipped_tags"
 
@@ -241,7 +241,8 @@ while IFS=' ' read -r name url rest; do
             continue
         fi
         [ -n "$pkg_pub" ] || pkg_pub=$pub
-        cat "$one" >>"$new"
+        cat "$one" >>"$built"
+        awk '{ print $1 }' "$one" >>"$built_names"
         say "fetched  $name $tag"
     done
 done <"$packages"
@@ -257,6 +258,26 @@ fi
 if [ -s "$skipped_tags" ]; then
     say "note: older tags skipped (missing shared-store identity or drifted version):"
     sed 's/^/        /' "$skipped_tags"
+fi
+
+# ---------------------------------------------------------------------------
+# Assemble the output. In `--only` mode, keep every row whose package is not
+# one of the rebuilt packages; match both the repository name from packages.txt
+# and the package name read out of the tag's ct.pkg.
+# ---------------------------------------------------------------------------
+if [ -n "$only" ]; then
+    awk -v only="$only" -v built="$(tr '\n' ' ' <"$built_names")" '
+        BEGIN {
+            n = split(only, a, " ")
+            for (i = 1; i <= n; i++) want[a[i]] = 1
+            n = split(built, a, " ")
+            for (i = 1; i <= n; i++) want[a[i]] = 1
+        }
+        NF >= 5 && !($1 in want)
+    ' "$old" >"$new"
+    cat "$built" >>"$new"
+else
+    cp "$built" "$new"
 fi
 
 # ---------------------------------------------------------------------------
