@@ -1,12 +1,10 @@
-hal 0.1.0 https://github.com/ct-pkg/hal v0.1.0 sha256:d38db6f2f733a13a7067e465267d07eb4f8f1ecc2e486a772160d1a18a92fbde
-hal-posix 0.1.0 https://github.com/ct-pkg/hal-posix v0.1.0 sha256:b732d63ee6a93456a41d9af7a7d74442d6394a55b10c0a053250b2c2c769b57b
-std 0.2.0 https://github.com/ct-pkg/std v0.2.0 sha256:cee740b3a4edc006cc8910e320f9b7ff90dbdc75b4f516eea1d710f6bdccae26
-zlib 0.1.0 https://github.com/ct-pkg/zlib v0.1.0 sha256:74a0370c3b8efde77bd0d7a27fd84323fe13a6425c65980f2d15c708ce4d47a8
-png 0.2.0 https://github.com/ct-pkg/png v0.2.0 sha256:2b6b5ce9010b01459da40ca14f02f3a6bbe51d10c427184d9bc178a62e88275e
-net-posix 0.2.0 https://github.com/ct-pkg/net-posix v0.2.0 sha256:9f6e3b32b8854dae014dbb3fc552df26ccaf87256cc5b9a83a5e9edcec735b43
-sqlite 0.1.0 https://github.com/ct-pkg/sqlite v0.1.0 sha256:7936eda60faf780ae32516178e262de020aa9d03e32293025cfcc55ff6eedc33
-sql 0.2.0 https://github.com/ct-pkg/sql v0.2.0 sha256:12d498af52e9a0a42763ff4c1fdec424dc0f455b5c079f877f1f19c02deb67f6
-json 0.1.0 https://github.com/ct-pkg/json v0.1.0 sha256:0f5355aa4ecd8d7724ad96587da8b30060f805c1f82a7387d2bf652e2cdb5f99
-curl 0.1.0 https://github.com/ct-pkg/curl v0.1.0 sha256:0fe07805b218bc17757343539bb1f02000212b2c877de75952f4e9638418270f
-hashmap 0.1.0 https://github.com/ct-pkg/hashmap v0.1.0 sha256:f0c0401a23b63e2ab8976569862478feaf96c689e0bee547d4ee682c59d6ed53
-dict 0.1.0 https://github.com/ct-pkg/dict v0.1.0 sha256:bccf387f39ec2f2f1f777e6b97c84c8e2cd0ef8384247a60b5e92f938fe1d46c
+std 0.3.2 std https://github.com/ct-pkg/std v0.3.2 sha256:95fc010f704d67e8718574d2419fab48063029c0f9e6cd18961f4e423088ce6d
+http 0.2.1 ct https://github.com/ct-pkg/http v0.2.1 sha256:28a95b4e840d397dd6c45cc264b37c58dade479dc5920d6a92818b1e43299e8c
+sse 0.13.0 ct https://github.com/ct-pkg/sse v0.13.0 sha256:f49de7442896f81d5f9ae40670f8b064398ff5113cb97c2796c09b91e687ca48
+llm-sse 0.1.0 ct https://github.com/ct-pkg/llm-sse v0.1.0 sha256:3bb31390eebc54ad7d5a0ae43985eff4357e7c9d4588838d9c8be074c85fab89
+process 0.1.1 ct https://github.com/ct-pkg/process v0.1.1 sha256:35a119e3cbf37568c3c63ca382bb6e9a1d0730659e440b018bfdc4bc9f2c784e
+token 0.1.1 ct https://github.com/ct-pkg/token v0.1.1 sha256:38cc82aea41eb02d7561d97de1d34a99cded74a2d587df93548f049992eb7ced
+json 0.6.1 ct https://github.com/ct-pkg/json v0.6.1 sha256:89f5ab9f2b1feb67372f261099e650e6a3b6e18b19f0516b7ba39e9022c47310
+fsguard 0.5.0 ct https://github.com/ct-pkg/fsguard v0.5.0 sha256:e66dbfd055f86d0ba5cbb8ea5cbb340d8047f1bc591d758c9e3c600c11e95642
+rill 0.23.1 ct https://github.com/ct-pkg/rill-dsl v0.23.1 sha256:b80e3cbd41e392c31cf3d1bbdeac7768d3c185f2afa06b2d838ba870bd3c7326
+nexcore 0.14.1 ct https://github.com/ct-pkg/nexcore v0.14.1 sha256:74608be0fb9e2f096436074c5c38f827e071a940d2b804e5f2a875cf4a1fa599
