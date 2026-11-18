@@ -6,7 +6,7 @@ png 0.2.0 https://github.com/ct-pkg/png v0.2.0 sha256:2b6b5ce9010b01459da40ca14f
 net-posix 0.2.0 https://github.com/ct-pkg/net-posix v0.2.0 sha256:9f6e3b32b8854dae014dbb3fc552df26ccaf87256cc5b9a83a5e9edcec735b43
 sqlite 0.1.0 https://github.com/ct-pkg/sqlite v0.1.0 sha256:7936eda60faf780ae32516178e262de020aa9d03e32293025cfcc55ff6eedc33
 sql 0.2.0 https://github.com/ct-pkg/sql v0.2.0 sha256:12d498af52e9a0a42763ff4c1fdec424dc0f455b5c079f877f1f19c02deb67f6
-json 0.6.0 https://github.com/ct-pkg/json v0.6.0 sha256:f2968fe93ed00e3da4c89e29f917db4741ff4e1f2aaf12ca60e7c5a6df1e4c54
-curl 0.1.0 https://github.com/ct-pkg/curl v0.1.0 sha256:0fe07805b218bc17757343539bb1f02000212b2c877de75952f4e9638418270f
+json 0.6.1 https://github.com/ct-pkg/json v0.6.1 sha256:89f5ab9f2b1feb67372f261099e650e6a3b6e18b19f0516b7ba39e9022c47310
+curl 0.1.1 https://github.com/ct-pkg/curl v0.1.1 sha256:bbc84c7b404b38dc2f501ac4672de7dd95d70aa854fc1a65ede81e18fe7a1f27
 hashmap 0.1.0 https://github.com/ct-pkg/hashmap v0.1.0 sha256:f0c0401a23b63e2ab8976569862478feaf96c689e0bee547d4ee682c59d6ed53
 dict 0.1.0 https://github.com/ct-pkg/dict v0.1.0 sha256:bccf387f39ec2f2f1f777e6b97c84c8e2cd0ef8384247a60b5e92f938fe1d46c
