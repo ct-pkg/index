@@ -14,12 +14,11 @@
 #
 # Defaults: the `index` file one level up (this script's parent is the index
 # repository root) and tools/repos.txt beside this script.
-# Rows absent from the index (hashmap, dict, index itself) keep their current
-# value; a non-`-` tag on such a row is reported because the index cannot
-# confirm it.
+# Rows absent from the index (`index` itself) keep their current value; a
+# non-`-` tag on such a row is reported because the index cannot confirm it.
 #
-# The index is space separated (`name version url tag sha256:...`), the
-# manifest is pipe separated (`name|tag|content|description`); the two files
+# The index is space separated (`name version publisher url tag sha256:...`),
+# the manifest is pipe separated (`name|tag|content|description`); the two files
 # need different field splitting, so it is done with line-local split() instead
 # of one awk -F.
 set -euo pipefail
@@ -49,7 +48,6 @@ drift=$(awk '
     FNR == NR {
         n = split($0, a, " ")
         if (n >= 6 && a[1] !~ /^#/) { tag = a[5]; ver = a[2]; url = a[4] }
-        else if (n >= 5 && a[1] !~ /^#/) { tag = a[4]; ver = a[2]; url = a[3] }
         else next
         k = vkey(ver)
         if (!(a[1] in idx) || k > idxkey[a[1]]) { idx[a[1]] = tag; idxkey[a[1]] = k }
@@ -78,8 +76,8 @@ drift=$(awk '
 unconfirmed=$(awk '
     FNR == NR {
         n = split($0, a, " ")
-        if (n >= 5 && a[1] !~ /^#/) idx[a[1]] = 1
-        if (n >= 6) { url = a[4] } else if (n >= 5) { url = a[3] } else { next }
+        if (n >= 6 && a[1] !~ /^#/) idx[a[1]] = 1
+        if (n >= 6) { url = a[4] } else { next }
         repo = url
         sub(/\/+$/, "", repo)
         sub(/^.*\//, "", repo)
@@ -125,7 +123,6 @@ awk '
     FNR == NR {
         n = split($0, a, " ")
         if (n >= 6 && a[1] !~ /^#/) { tag = a[5]; ver = a[2]; url = a[4] }
-        else if (n >= 5 && a[1] !~ /^#/) { tag = a[4]; ver = a[2]; url = a[3] }
         else next
         k = vkey(ver)
         if (!(a[1] in idx) || k > idxkey[a[1]]) { idx[a[1]] = tag; idxkey[a[1]] = k }

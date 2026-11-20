@@ -13,6 +13,6 @@ process|v0.1.1|ct.pkg|Subprocess execution for CT with streaming stdout/stderr c
 token|v0.1.1|ct.pkg|Rough token budget estimation for CT (heuristics, not a tokenizer)
 json|v0.6.1|ct.pkg|JSON text <-> tree mapped onto a bundled cJSON
 fsguard|v0.5.0|ct.pkg|A policy-aware filesystem layer for CT: path sandboxing, chunked reads, structured errors
-rill-dsl|v0.23.1|ct.pkg|A minimal, token-efficient scripting DSL for LLM-generated tool orchestration
+rill-dsl|v0.23.3|ct.pkg|A minimal, token-efficient scripting DSL for LLM-generated tool orchestration
 nexcore|v0.14.1|ct.pkg|Cross-platform core reuse framework: business logic in CT compiled to a C ABI library
 index|-|index|The official ct-pkg package index

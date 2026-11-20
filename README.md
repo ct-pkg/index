@@ -45,10 +45,9 @@ no HTTP service and no database: the file is the index.
 
 `publisher` is the shared-store identity: `ct` installs into
 `$CT_HOME/pkg/<publisher>/<name>/<version>`, so a row without it is unusable
-even when the tag and digest are correct. The five-field rows of the old
-contract (no publisher) are still parsed by `ct`, but this repository no longer
-generates them. `gen-index.sh` reads `publisher` and `ns-root` from the tag's
-`ct.pkg` and refuses to write a row when either is missing.
+even when the tag and digest are correct. `gen-index.sh` reads `publisher` and
+`ns-root` from the tag's `ct.pkg` and refuses to write a row when either is
+missing, so every row in `index` carries all six fields.
 
 The digest is the one `ct get` computes: the SHA-256 of every regular file's
 relative path, a newline and the file's bytes, in sorted order, skipping `.git`,
@@ -59,51 +58,54 @@ existing tag — that needs a new version and a new tag.
 
 ## Published
 
-Twelve packages are registered. The table below is the committed index as of
-2026-11-08: the old generator kept one row per package and named each remote's
-highest `v*` tag. The withdrawn `1.0.0` / `1.0.1` tags are gone from every
-remote and the version line restarted at `0.1.0`:
+`packages.txt` is the admission list of the registry. Versions are not repeated
+here: `index` is the only source of truth for what is published.
 
-| Package | Repository | Version |
-| --- | --- | --- |
-| `hal` | https://github.com/ct-pkg/hal | `0.1.0` |
-| `hal-posix` | https://github.com/ct-pkg/hal-posix | `0.1.0` |
-| `std` | https://github.com/ct-pkg/std | `0.2.0` |
-| `zlib` | https://github.com/ct-pkg/zlib | `0.1.0` |
-| `png` | https://github.com/ct-pkg/png | `0.2.0` |
-| `net-posix` | https://github.com/ct-pkg/net-posix | `0.2.0` |
-| `sqlite` | https://github.com/ct-pkg/sqlite | `0.1.0` |
-| `sql` | https://github.com/ct-pkg/sql | `0.2.0` |
-| `json` | https://github.com/ct-pkg/json | `0.1.0` |
-| `curl` | https://github.com/ct-pkg/curl | `0.1.0` |
-| `hashmap` | https://github.com/ct-pkg/hashmap | `0.1.0` |
-| `dict` | https://github.com/ct-pkg/dict | `0.1.0` |
+| Repository | Packages it publishes |
+| --- | --- |
+| https://github.com/ct-pkg/std | `std` |
+| https://github.com/ct-pkg/http | `http` |
+| https://github.com/ct-pkg/sse | `sse` |
+| https://github.com/ct-pkg/llm-sse | `llm-sse` |
+| https://github.com/ct-pkg/process | `process` |
+| https://github.com/ct-pkg/token | `token` |
+| https://github.com/ct-pkg/json | `json` |
+| https://github.com/ct-pkg/fsguard | `fsguard` |
+| https://github.com/ct-pkg/rill-dsl | `rill` up to 0.23.1, `rill-dsl` from 0.23.2 |
+| https://github.com/ct-pkg/nexcore | `nexcore` |
 
 `std` is the CT standard library moved out of ct-lang, and it now owns the C
 mappings that used to live in `clib` (which was deleted, not archived).
 
-### Migrating to the shared-store contract
+### Repositories not registered
 
-The table above is the last five-field index (2026-11-08). Those rows still
-parse, but they predate the `publisher` / `ns-root` identity that `ct` v0.54.0
-made mandatory for the shared store (`$CT_HOME/pkg/<publisher>/<name>/<version>`).
-`gen-index.sh` now refuses to write a row without both keys, and
-`refresh-index.sh` fails closed on a newest tag that lacks them.
+`hal`, `hal-posix`, `zlib`, `png`, `net-posix`, `sqlite`, `sql`, `curl`,
+`hashmap` and `dict` still exist, but their tagged `ct.pkg` carries no
+`publisher` or `ns-root`, so no row can be generated for them. They are absent
+from `packages.txt` and have no line in `index`; a re-release that carries both
+keys puts them back in the list like any other package.
 
-A dry run on 2026-11-18 over every repository in `packages.txt` shows:
+The generator refuses to mix publishers across versions of one package: the
+newest tag defines the identity, and older tags with a different publisher are
+reported and skipped.
 
-| Kind | Packages |
+### Frozen transitional scripts
+
+The shell tools stay usable but stop growing. Frozen means no new index-side
+policy: no new row fields, no new row formats and no new admission rules
+invented here. Three kinds of change are allowed and expected:
+
+| Change | Rule |
 | --- | --- |
-| Ready (tag `ct.pkg` has `publisher` + `ns-root`) | `std` 0.3.2 (`publisher = std`), `json` 0.1.1–0.6.0 |
-| Needs a re-release with both keys | `hal`, `hal-posix`, `std` < 0.3.2, `zlib`, `png`, `net-posix`, `sqlite`, `sql`, `curl`, `hashmap`, `dict` |
+| contract sync | the contract or `ct` changes first; these scripts follow in the same window, editing the mirrored rules directly |
+| bug fix | current behaviour contradicts the contract, crashes, or misjudges a package |
+| retirement | a script or check is deleted once `ct` covers it |
 
-Until those repositories publish a tag that carries the identity, the nightly
-refresh aborts and leaves `index` untouched. That is deliberate: a row that
-`ct get` cannot install is worse than no row. The generator also refuses to mix
-publishers across versions of one package — `std` 0.3.0/0.3.1 declare
-`publisher = ct` while 0.3.2 declares `std`, so only the newest identity is
-indexed and the older tags are reported as skipped. Pick one publisher per
-package before backfilling history.
+No compatibility promise. Nothing in this repository is publicly released yet,
+so the mirrored rules — the digest recipe in `gen-index.sh` and the strict lint
+in `package-check.sh` — are edited in place when the contract moves. There is no
+dual-format support, no compatibility shim and no deprecation window for a row
+shape: `index` carries six fields only.
 
 ## Regenerating the index
 
@@ -183,7 +185,7 @@ verify the row with `ct get` -> commit + push index -> sync repos.txt
 | `tools/package.sh publish <name>` | Creates the repository through the GitHub REST API (RESTie) when missing, pushes `main` and the tag from `tools/repos.txt`, reads `content` back to prove the push landed, then runs the shared index pipeline. Needs `GITHUB_TOKEN` (or `GH_TOKEN`). |
 | `tools/package.sh release <name> <tag>` | For an already-committed tag: same preflight, push, index pipeline. Only needs git plus the token for the HTTPS push. |
 | `tools/verify-index.sh [--index <file>] [--name <name>]` | Replays each row in an isolated `HOME` / `CT_HOME` with `ct get --index`, then compares the digest in `ct.lock` with the index row. This is the end-to-end check `refresh-index.sh` cannot do by itself. |
-| `tools/sync-repos-tags.sh [--check] [<index-file> <manifest>]` | Derives the `tag` column of `tools/repos.txt` from `index` (field 5 of a six-field row, field 4 of a legacy row). `--check` reports drift and exits 1 without writing. |
+| `tools/sync-repos-tags.sh [--check] [<index-file> <manifest>]` | Derives the `tag` column of `tools/repos.txt` from `index` (field 5 of a six-field row). `--check` reports drift and exits 1 without writing. |
 
 The index holds one line per version. `ct get` selects the newest version when
 the range is omitted (`*`) and the lowest satisfying version (MVS) for an
@@ -283,10 +285,9 @@ ct install                            # offline check; prints the build command
 ct verify                             # offline digest check against ct.lock
 ```
 
-A bare name is only unambiguous when the index has one publisher for it. The
-committed rows are still the legacy five-field shape, so qualified names only
-resolve after the packages re-release with `publisher` / `ns-root` (see
-`Published` above).
+A bare name is only unambiguous when the index has one publisher for it. Every
+committed row now carries `publisher`, so qualified names resolve for every
+registered package.
 
 ## 术语表（Glossary）
 
