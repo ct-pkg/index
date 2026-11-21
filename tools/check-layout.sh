@@ -64,11 +64,49 @@ fi
 
 checked=0
 mismatched=0
+skipped=0
+
+# Read one key from the package manifest; the compiler's parser accepts
+# `key = value`, so the checker does the same and trims the value.
+manifest_value() {
+    awk -F= -v k="$1" '
+        {
+            key = $1
+            gsub(/^[ \t]+|[ \t]+$/, "", key)
+            if (key != k) next
+            v = $0
+            sub(/^[^=]*=/, "", v)
+            gsub(/^[ \t]+|[ \t]+$/, "", v)
+            print v
+            exit
+        }
+    ' "$pkg/ct.pkg"
+}
 
 for pkg in "${packages[@]}"; do
     name="$(basename "$pkg")"
+
+    # The compiler resolves `import a::b::U` under `<pkg>/<ns-root>/a/b/`, so
+    # the directory rule is relative to ns-root, not the package root. A
+    # missing or empty key means "." (the pre-ns-root layout).
+    nsroot="$(manifest_value ns-root)"
+    [ -n "$nsroot" ] || nsroot=.
+    while [ "${nsroot%/}" != "$nsroot" ]; do
+        nsroot="${nsroot%/}"
+    done
+    while [ "${nsroot#./}" != "$nsroot" ]; do
+        nsroot="${nsroot#./}"
+    done
+    [ -n "$nsroot" ] || nsroot=.
+    if [ "$nsroot" = "." ]; then
+        judge_root="$pkg"
+    else
+        judge_root="$pkg/$nsroot"
+    fi
+    [ -d "$judge_root" ] || continue
+
     while IFS= read -r f; do
-        rel="${f#"$pkg"/}"
+        rel="${f#"$judge_root"/}"
         if [ "$rel" != "$f" ] && [[ "$rel" == */* ]]; then
             dir="${rel%/*}"
         else
@@ -85,7 +123,21 @@ for pkg in "${packages[@]}"; do
                 "$name" "$rel" "$ns" "$want"
             mismatched=$((mismatched + 1))
         fi
-    done < <(find "$pkg" -name '*.ct' -type f -print | sort)
+    done < <(find "$judge_root" -name '*.ct' -type f -print | sort)
+
+    # A namespaced unit outside ns-root is a test/experiment fixture, not part
+    # of the package's published unit tree. Count it separately so it is not
+    # silently dropped and not reported as a mismatch.
+    if [ "$nsroot" != "." ]; then
+        while IFS= read -r f; do
+            case "$f" in
+                "$judge_root"/*) continue ;;
+            esac
+            ns="$(sed -n 's/^[[:space:]]*namespace[[:space:]]\{1,\}\([A-Za-z_][A-Za-z0-9_:]*\)[[:space:]]*;.*$/\1/p' "$f" | head -n 1)"
+            [ -n "$ns" ] || continue
+            skipped=$((skipped + 1))
+        done < <(find "$pkg" -name '*.ct' -type f -print | sort)
+    fi
 done
 
 if [ "$mismatched" -ne 0 ]; then
@@ -95,3 +147,6 @@ if [ "$mismatched" -ne 0 ]; then
 fi
 
 printf 'ok: %d namespaced units match their directory\n' "$checked"
+if [ "$skipped" -ne 0 ]; then
+    printf 'skipped %d units outside ns-root\n' "$skipped"
+fi
