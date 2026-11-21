@@ -301,7 +301,7 @@ home. They are records, not per-package manuals:
 
 ```sh
 export CT_INDEX=$PWD/index
-ct get <publisher>/<name>@<version>   # e.g. std/std@0.3.2
+ct get <publisher>/<name>@<version>   # e.g. ct/std@0.19.0
 ct install                            # offline check; prints the build command
 ct verify                             # offline digest check against ct.lock
 ```

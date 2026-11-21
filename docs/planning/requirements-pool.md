@@ -16,7 +16,7 @@
 | IDX-4 | `tools/package.sh` 的索引推送补齐与 `refresh-index.sh --push` 同级的保护：推送前 fast-forward 校验、推送后 `git ls-remote` 回读 | 主发布路径（publish / release）目前只做 `git push origin main`，缺回读；两条推送路径的安全等级不一致 | P1 | done | REQ | 2026-11-21 | |
 | IDX-5 | 索引格式增加 `min-compiler` 字段、摘要增加 `.digestignore` | 两个都涉及消费端契约：索引字段由 `ct get` 解析，摘要算法在索引仓与 `ct` 侧各有一份实现 | P3 | open | REQ | 2026-11-18 | 归属 CT 仓字段/算法契约；本仓不立项，待 CT 侧给出结论后再评估 |
 | IDX-6 | `check-layout.sh` 未读取 `ns-root`：`ns-root = src` 的包（json、fsguard、nexcore 等）其命名空间目录判定会误报，实测完整工作区 101 个单元中 47 个 FAIL | 门禁在真实工作区长期红，失去信号价值；与 `v0-PH-1` 的零输入修复正交 | P1 | done | REQ | 2026-11-21 | |
-| IDX-7 | README「Usage」的示例过期：`ct get <publisher>/<name>@<version>   # e.g. std/std@0.3.2`，实际发布方为 `ct`、`std` 最新 0.19.0，索引中也没有 0.3.2 行 | 新用户照抄示例会失败；属于 `IDX-2` 关闭后留下的单行修正 | P2 | open | REQ | 2026-11-21 | |
+| IDX-7 | README「Usage」的示例过期：`ct get <publisher>/<name>@<version>   # e.g. std/std@0.3.2`，实际发布方为 `ct`、`std` 最新 0.19.0，索引中也没有 0.3.2 行 | 新用户照抄示例会失败；属于 `IDX-2` 关闭后留下的单行修正 | P2 | done | REQ | 2026-11-21 | |
 
 ## 不采纳项
 
