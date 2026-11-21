@@ -12,3 +12,4 @@ window: W3
 | --- | --- | --- | --- | --- | --- |
 | `draft-index-refresh-unblock` | `v0-PH-0` | `docs/phases/draft-index-refresh-unblock` | `docs/phases/v0-PH-0` | v0.0.0 | migrated |
 | `draft-gate-zero-input` | `v0-PH-1` | `docs/phases/draft-gate-zero-input` | `docs/phases/v0-PH-1` | v0.1.0 | migrated |
+| `draft-index-push-parity` | `v0-PH-2` | `docs/phases/draft-index-push-parity` | `docs/phases/v0-PH-2` | v0.2.0 | migrated |
