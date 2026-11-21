@@ -65,6 +65,7 @@ fi
 checked=0
 mismatched=0
 skipped=0
+bad_nsroot=0
 
 # Read one key from the package manifest; the compiler's parser accepts
 # `key = value`, so the checker does the same and trims the value.
@@ -103,7 +104,11 @@ for pkg in "${packages[@]}"; do
     else
         judge_root="$pkg/$nsroot"
     fi
-    [ -d "$judge_root" ] || continue
+    if [ ! -d "$judge_root" ]; then
+        printf "FAIL  %s: ns-root '%s' is not a directory\n" "$name" "$nsroot" >&2
+        bad_nsroot=$((bad_nsroot + 1))
+        continue
+    fi
 
     while IFS= read -r f; do
         rel="${f#"$judge_root"/}"
@@ -140,8 +145,10 @@ for pkg in "${packages[@]}"; do
     fi
 done
 
-if [ "$mismatched" -ne 0 ]; then
-    printf '\n%d of %d namespaced units do not match their directory\n' \
+if [ "$mismatched" -ne 0 ] || [ "$bad_nsroot" -ne 0 ]; then
+    [ "$bad_nsroot" -eq 0 ] || printf '\n%d package(s) have an invalid ns-root\n' \
+        "$bad_nsroot" >&2
+    [ "$mismatched" -eq 0 ] || printf '\n%d of %d namespaced units do not match their directory\n' \
         "$mismatched" "$checked" >&2
     exit 1
 fi
