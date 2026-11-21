@@ -13,6 +13,7 @@
 | phase | 追溯 | 状态 | 授权 |
 | --- | --- | --- | --- |
 | `v0-PH-0` | `IDX-1` / `AN-IDX-1` | 已开卡，退出判据待第 5 条（nightly 绿） | `docs/decisions/D-1.md` |
+| `v0-PH-1` | `IDX-3` / `AN-IDX-3` | 已开卡，待实现 | `docs/decisions/D-2.md` |
 
 `v0-PH-0` 覆盖已推送的三个实现提交：`3f0e1bb`、`3c636d5`、`0cdb132`。
 
@@ -21,11 +22,11 @@
 | 顺序 | 草案 | 追溯 | 能否开工 | 依赖 | 边界 |
 | --- | --- | --- | --- | --- | --- |
 | — | ~~`draft-index-refresh-unblock`~~ | AN-IDX-1 | — | — | 已于 2026-11-21 定稿为 `v0-PH-0`（D-1） |
-| 1 | `draft-gate-zero-input` | AN-IDX-3 | 是 | 无 | 只加零输入断言与负例，不改门禁判定逻辑 |
-| 2 | `draft-index-push-parity` | AN-IDX-4 | 是；I10 硬错已在 `7a0c7cd` 修复，不属于本草案 | 无 | 只补 `package.sh` 的快进断言与推送后回读，不合并两条推送入口 |
-| 3 | `draft-readme-single-source` | AN-IDX-2 | 是；版本表已去版本化（`0cdb132`），剩余为"由 CI 生成或引用"的增量 | 无 | 只改 README 与静态列表，不引入表格自动生成 |
+| — | ~~`draft-gate-zero-input`~~ | AN-IDX-3 | — | — | 已于 2026-11-21 定稿为 `v0-PH-1`（D-2），要求 v1 发布前完成 |
+| 1 | `draft-index-push-parity` | AN-IDX-4 | 是；I10 硬错已在 `7a0c7cd` 修复，不属于本草案 | 无 | 只补 `package.sh` 的快进断言与推送后回读，不合并两条推送入口 |
+| 2 | `draft-readme-single-source` | AN-IDX-2 | 是；版本表已去版本化（`0cdb132`），剩余为"由 CI 生成或引用"的增量 | 无 | 只改 README 与静态列表，不引入表格自动生成 |
 
-序号 1、2、3 互不依赖，可并行。
+序号 1、2 互不依赖，可并行。
 
 ## 2. 未入图条目
 

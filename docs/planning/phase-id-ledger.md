@@ -11,3 +11,4 @@ window: W3
 | 旧 ID | 新 ID | 旧路径 | 新路径 | 版本 | 状态 |
 | --- | --- | --- | --- | --- | --- |
 | `draft-index-refresh-unblock` | `v0-PH-0` | `docs/phases/draft-index-refresh-unblock` | `docs/phases/v0-PH-0` | v0.0.0 | migrated |
+| `draft-gate-zero-input` | `v0-PH-1` | `docs/phases/draft-gate-zero-input` | `docs/phases/v0-PH-1` | v0.1.0 | migrated |

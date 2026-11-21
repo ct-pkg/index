@@ -9,5 +9,6 @@
 | 任务 | 对话 | 角色 | phase |
 | --- | --- | --- | --- |
 | 解除 nightly 索引刷新阻塞 | 单会话（本仓） | EDITOR + DEV + VERIFY | `v0-PH-0` |
+| 门禁零输入不得静默通过 | 单会话（本仓） | EDITOR + DEV + VERIFY | `v0-PH-1` |
 
 未定稿的草案不在此表（PN-14），见 `docs/planning/roadmap.md`。
