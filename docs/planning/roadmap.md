@@ -15,6 +15,7 @@
 | `v0-PH-0` | `IDX-1` / `AN-IDX-1` | 已开卡，退出判据待第 5 条（nightly 绿） | `docs/decisions/D-1.md` |
 | `v0-PH-1` | `IDX-3` / `AN-IDX-3` | 已开卡，实现已落地，待 VERIFY 复核后收口 | `docs/decisions/D-2.md` |
 | `v0-PH-2` | `IDX-4` / `AN-IDX-4` | 已开卡，待执笔人实现 | `docs/decisions/D-3.md` |
+| `v0-PH-3` | `IDX-6` / `AN-IDX-6` | 已开卡，待执笔人实现；建议 `v0-PH-1` 收口后开工（同文件） | `docs/decisions/D-4.md` |
 
 `v0-PH-0` 覆盖已推送的三个实现提交：`3f0e1bb`、`3c636d5`、`0cdb132`。
 
@@ -22,11 +23,9 @@
 
 **当前草案**
 
-| 草案 | 追溯 | 能否开工 | 依赖 | 边界 |
-| --- | --- | --- | --- | --- |
-| `draft-layout-ns-root` | AN-IDX-6 | 否，待定稿授权 | `v0-PH-1` 收口（同改 `check-layout.sh` 与 `gate-selftest.sh`） | 只改 `check-layout.sh` 的判定根与自测；不动 `check-char-host.sh`、`gen-index.sh`、摘要算法，也不移动包内夹具 |
+无。
 
-**已处置的四份**
+**已处置的五份**
 
 | 草案 | 追溯 | 结果 |
 | --- | --- | --- |
@@ -34,6 +33,7 @@
 | `draft-gate-zero-input` | AN-IDX-3 | 2026-11-21 定稿为 `v0-PH-1`（D-2），要求 v1 发布前完成 |
 | `draft-index-push-parity` | AN-IDX-4 | 2026-11-21 定稿为 `v0-PH-2`（D-3） |
 | `draft-readme-single-source` | AN-IDX-2 | 2026-11-21 关闭：目标已由 `0cdb132` 达成，残余项登记为 `IDX-7` |
+| `draft-layout-ns-root` | AN-IDX-6 | 2026-11-21 定稿为 `v0-PH-3`（D-4） |
 
 关闭的草案不占正式编号，因此账本没有对应行（PN-7 只管已分配的号）。
 `v0-PH-2` 的实现由执笔人承担。新的需求先入需求池，再按是否需要成组交付决定

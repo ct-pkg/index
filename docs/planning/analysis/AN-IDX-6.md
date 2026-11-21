@@ -60,16 +60,16 @@ rel 的目录部分必须等于 want
 
 | # | 命令 | 阈值 |
 | --- | --- | --- |
-| 1 | `CT_PKG_ROOT=/Users/samxx/trae-ws bash tools/check-layout.sh` | FAIL 行 0；`ok: 101 namespaced units`（单元数不因改动减少） |
-| 2 | `CT_PKG_ROOT=/Users/samxx/trae-ws bash tools/check-layout.sh` 的 FAIL 行数 | 与改动前的 47 相比下降为 0，且不新增其它包 |
+| 1 | `CT_PKG_ROOT=/Users/samxx/trae-ws bash tools/check-layout.sh` | FAIL 行 0；输出 `ok: 68 namespaced units` 并另报 `skipped 33 units outside ns-root`；68 + 33 = 改动前的 101 |
+| 2 | 同一命令的 FAIL 行数 | 由改动前的 47 降为 0，且不新增其它包 |
 | 3 | 夹具：`ns-root = src`、`src/a/b/x.ct` 声明 `namespace a::b;` | rc=0 |
 | 4 | 夹具：`ns-root = src`、`src/a/c/x.ct` 声明 `namespace a::b;` | rc=1，提示 `expects directory a/b` |
 | 5 | 夹具：`ns-root = src`、`test/a/x.ct` 声明 `namespace a;` | rc=0（子树外不判定） |
 | 6 | 夹具：`ns-root = missing` | rc=1，提示 `ns-root 'missing' is not a directory` |
 | 7 | `bash tools/gate-selftest.sh` | `summary: … 0 failed`（含新增四条） |
 
-判据 1、2 里的工作区路径是当前开发机的实测根；CI 用 `ws/` 时以 FAIL 行数为 0、
-单元数不减为准。
+判据里的绝对数字是 2026-11-21 开发机实测值（该根下 101 个单元：子树内 68、子树外
+33）。包仓内容变化会让数字移动，届时以「FAIL 行 0、checked + skipped 不减少」为准。
 
 ## 4. 依赖与风险
 
