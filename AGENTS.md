@@ -449,7 +449,7 @@ AI_ENGINEERING_SPEC=<主规范路径> ...                          # 覆盖默�
 | 项 | 值 |
 | --- | --- |
 | 仓库性质 | ct-pkg 组织的**维护仓**：产物是 `index` 文本文件与 `tools/` 脚本；本身不是 ct 包，无 `ct.pkg`，不在 `packages.txt` |
-| 对话清单 | 单会话；三类常驻对话未建（见 0.3） |
+| 对话清单 | 规划会话（REQ + EDITOR）；实现由执笔人（DEV）承担；VERIFY 暂由执笔人复核留痕（见 0.3） |
 | 任务-对话映射 | `docs/session-map.md`；正式 phase `v0-PH-0`、`v0-PH-1` 已登记（草案不登记，PN-14） |
 | 门禁入口 | `tools/package-check.sh`（发布 lint）、`tools/check-layout.sh`、`tools/check-char-host.sh`、`tools/gate-selftest.sh`、`tools/sync-repos-tags.sh --check`、`tools/refresh-index.sh --dry-run`；`CT_PKG_ROOT` 未设置或为空时按默认工作区根解析，零包时必须红；**无** `tools/check.sh`（G0–G9 未脚本化，见 0.3） |
 | 文档 snippet | 无 |
@@ -471,14 +471,15 @@ AI_ENGINEERING_SPEC=<主规范路径> ...                          # 覆盖默�
 
 #### 0.3 偏离项
 
-`deviation: single-session-workflow`
+`deviation: split-planning-and-implementation`
 
-    日期: 2026-11-18
+    日期: 2026-11-21
     条款: §9.1 / §9.3 / G0 g0-landing
-    现状: 单会话；三类常驻对话未建，尚无已定稿 phase，session-map 暂缺。
-    理由: 本仓为维护仓，当前以单会话 + 草案卡推进。
-    收敛: 出现并行 phase 或多人协作时建会话并回填 session-map。
-    签字: 用户已批准（2026-11-18）
+    现状: 规划会话承担 REQ + EDITOR，只产出需求池、分析、路线图、卡面与收口文档；
+          实现由执笔人（DEV）承担。VERIFY 暂由执笔人复核并留痕，独立评审会话未建。
+    理由: 用户 2026-11-21 裁定：需求、规划与计划不动代码，phase 开卡后由执笔人实现。
+    收敛: 引入独立 VERIFY / REVIEW 会话后，把复核与签字移出 DEV，并回填 session-map。
+    签字: 用户已批准（2026-11-21）
 
 `deviation: no-gate-scripts`
 
