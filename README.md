@@ -193,6 +193,13 @@ the range is omitted (`*`) and the lowest satisfying version (MVS) for an
 explicit range, so the whole index is rebuilt rather than appended to. Indexed
 versions are immutable: a changed digest needs a new version, never an edit.
 
+Both index pushes use the same guard as `refresh-index.sh --push`: before
+pushing, `package.sh` fetches `origin/main` and refuses unless the remote tip is
+an ancestor of `HEAD` (a fast-forward); after pushing it reads the remote tip
+back with `git ls-remote`; it never passes `--force`. A rejected push leaves the
+local commit in place and names both sides, so the operator can integrate and
+rerun.
+
 **Temporary discipline (until `ct index refresh` exists).** Every push of
 `index` must be preceded by a replay that actually ran. `package.sh` now aborts
 when no compiler is found instead of warning (get-contract I10), and there is no
