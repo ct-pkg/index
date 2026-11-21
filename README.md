@@ -245,7 +245,7 @@ and prints every command, expected exit code and observed output.
 | Workflow | What it does |
 | --- | --- |
 | `.github/workflows/index.yml` | Nightly `--all-tags` refresh; syncs `tools/repos.txt`; commits and pushes `index` and the manifest, or does nothing when both are unchanged. Also `workflow_dispatch`. |
-| `.github/workflows/gates.yml` | Checks out `index` under `ws/index`, clones every package in `packages.txt` beside it, then runs `check-layout.sh`, `check-char-host.sh` and `sync-repos-tags.sh --check`. This is what makes the workspace gates run without a developer's staging directory. |
+| `.github/workflows/gates.yml` | Checks out `index` under `ws/index`, clones every package in `packages.txt` beside it, then runs `gate-selftest.sh`, `check-layout.sh`, `check-char-host.sh` and `sync-repos-tags.sh --check`. This is what makes the workspace gates run without a developer's staging directory. |
 
 ## Gate scripts
 
@@ -253,13 +253,17 @@ and prints every command, expected exit code and observed output.
 | --- | --- |
 | `tools/check-layout.sh [package ...]` | Every unit that declares `namespace A::B;` sits in `<package-root>/A/B/`. With no arguments it walks every `*/ct.pkg` in the workspace. Units without a namespace (C bindings and their `.m.ct` shims) are exempt. |
 | `tools/check-char-host.sh` | The compiler keys a mapped method by `(host, method)` and ignores the signature, so two packages may each add `len()` on `char *` and only clash at a call site that sees both. The script groups every `map trait ... for type\|namespace ...` block by host and fails on a duplicate name, and on a host declared `const` / `volatile` (the type key drops those qualifiers). |
+| `tools/gate-selftest.sh` | Fixture-based self-test for the two gates above: empty workspace, missing `ct.pkg`, matching and mismatching namespaces, packages without mapped methods, duplicate methods and `const` hosts. Runs without a package checkout. |
 
 Both gates walk two levels up from `tools/`, i.e. the ct-pkg workspace root,
-because the packages are separate repositories. Set `CT_PKG_ROOT` to point
-them at another layout (the CI workflow uses `ws/`). They are useful in a
-working checkout of the workspace, not in a bare clone of this repository
-alone. `tools/package.sh check` runs the same gates before a release, together
-with `tools/package-check.sh` and the workspace-wide `check-char-host.sh`.
+because the packages are separate repositories. `CT_PKG_ROOT` overrides that
+root; when the variable is unset **or empty** the default `tools/../..` is used,
+so an unset variable is not an error. A root that contains no `*/ct.pkg`, on the
+other hand, is a failure: both scripts exit 1 and print the resolved root, the
+package count and a hint to set `CT_PKG_ROOT`, instead of reporting `ok: 0`.
+That keeps a broken CI clone from looking green. `tools/package.sh check` runs
+the same gates before a release, together with `tools/package-check.sh` and the
+workspace-wide `check-char-host.sh`.
 
 ## Cross-package decision documents
 
