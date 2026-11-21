@@ -46,10 +46,10 @@ run_case() {
 }
 
 mkpkg() {
-    local ws="$1" name="$2"
+    local ws="$1" name="$2" nsroot="${3:-.}"
     mkdir -p "$ws/$name"
-    printf 'name = %s\npublisher = ct\nversion = 0.1.0\nns-root = .\n' "$name" \
-        >"$ws/$name/ct.pkg"
+    printf 'name = %s\npublisher = ct\nversion = 0.1.0\nns-root = %s\n' \
+        "$name" "$nsroot" >"$ws/$name/ct.pkg"
 }
 
 # ---------------------------------------------------------------------------
@@ -91,6 +91,33 @@ mkpkg "$ws_bad" hello
 mkdir -p "$ws_bad/hello/a/c"
 printf 'namespace a::b;\npub fn hi() {}\n' >"$ws_bad/hello/a/c/x.ct"
 run_case "layout rejects a mismatched namespace" 1 "$layout" "expects directory" "$ws_bad"
+
+# A package with ns-root = src is judged relative to src/, not the package root.
+ws_src_ok="$root/ws-src-ok"
+mkpkg "$ws_src_ok" hello src
+mkdir -p "$ws_src_ok/hello/src/a/b"
+printf 'namespace a::b;\npub fn hi() {}\n' >"$ws_src_ok/hello/src/a/b/x.ct"
+run_case "layout accepts a namespace under ns-root" 0 "$layout" \
+    "ok: 1 namespaced units" "$ws_src_ok"
+
+ws_src_bad="$root/ws-src-bad"
+mkpkg "$ws_src_bad" hello src
+mkdir -p "$ws_src_bad/hello/src/a/c"
+printf 'namespace a::b;\npub fn hi() {}\n' >"$ws_src_bad/hello/src/a/c/x.ct"
+run_case "layout rejects a mismatch under ns-root" 1 "$layout" \
+    "expects directory a/b" "$ws_src_bad"
+
+ws_src_outside="$root/ws-src-outside"
+mkpkg "$ws_src_outside" hello src
+mkdir -p "$ws_src_outside/hello/src" "$ws_src_outside/hello/test/a"
+printf 'namespace a;\npub fn hi() {}\n' >"$ws_src_outside/hello/test/a/x.ct"
+run_case "layout skips a namespaced unit outside ns-root" 0 "$layout" \
+    "skipped 1 units outside ns-root" "$ws_src_outside"
+
+ws_missing="$root/ws-missing"
+mkpkg "$ws_missing" hello missing
+run_case "layout rejects a missing ns-root" 1 "$layout" \
+    "ns-root 'missing' is not a directory" "$ws_missing"
 
 # ---------------------------------------------------------------------------
 # Char-host: no mapped method is fine; duplicates and qualified hosts are not.
