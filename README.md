@@ -181,6 +181,7 @@ verify the row with `ct get` -> commit + push index -> sync repos.txt
 | Command | What it does |
 | --- | --- |
 | `tools/package.sh check [<name> ...]` | Read-only preflight: clean tree, `v<version>` matches `ct.pkg`, `tools/package-check.sh`, `check-layout.sh` per package, `check-char-host.sh` over the workspace. Never invokes `ct`. |
+| `tools/package.sh verify <name> <version>` | Replays one existing index row with `ct get`. Exits non-zero when no compiler is found; this is the guard the `no-ct` CI job exercises. |
 | `tools/package-check.sh [--strict] <dir>` | The release lint itself: PK-1/2/5/8 (the read-only criteria that used to come from the compiler) plus release and optional strict checks. Pure shell, no compiler, no network, no writes. |
 | `tools/package.sh publish <name>` | Creates the repository through the GitHub REST API (RESTie) when missing, pushes `main` and the tag from `tools/repos.txt`, reads `content` back to prove the push landed, then runs the shared index pipeline. Needs `GITHUB_TOKEN` (or `GH_TOKEN`). |
 | `tools/package.sh release <name> <tag>` | For an already-committed tag: same preflight, push, index pipeline. Only needs git plus the token for the HTTPS push. |
@@ -191,6 +192,13 @@ The index holds one line per version. `ct get` selects the newest version when
 the range is omitted (`*`) and the lowest satisfying version (MVS) for an
 explicit range, so the whole index is rebuilt rather than appended to. Indexed
 versions are immutable: a changed digest needs a new version, never an edit.
+
+**Temporary discipline (until `ct index refresh` exists).** Every push of
+`index` must be preceded by a replay that actually ran. `package.sh` now aborts
+when no compiler is found instead of warning (get-contract I10), and there is no
+bypass flag: an audit marker would have to live in the index row, whose format
+is owned by the contract, so a bypass could not be recorded truthfully. A
+machine without `ct` therefore cannot publish; publish from one that has it.
 
 ### Release lint (`tools/package-check.sh`)
 

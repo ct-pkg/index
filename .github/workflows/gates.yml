@@ -51,3 +51,37 @@ jobs:
 
       - name: manifest drift (tools/repos.txt tag column)
         run: bash ws/index/tools/sync-repos-tags.sh --check ws/index/index ws/index/tools/repos.txt
+
+  no-ct:
+    # get-contract I10: publish must not push an index row that no consumer has
+    # installed. `tools/package.sh verify` resolves the compiler before it does
+    # anything else, so this job needs no token and no network.
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout the index repository
+        uses: actions/checkout@v4
+
+      - name: the runner must not have ct
+        run: |
+          set -eu
+          if command -v ct >/dev/null 2>&1 || command -v ct-ast >/dev/null 2>&1; then
+            echo "a compiler is installed on this runner; the no-ct guard is meaningless" >&2
+            exit 1
+          fi
+
+      - name: verify refuses to run without ct
+        run: |
+          set -eu
+          rc=0
+          CT_BIN= bash tools/package.sh verify std 0.0.0 >out.txt 2>err.txt || rc=$?
+          if [ "$rc" -eq 0 ]; then
+            echo "verify succeeded without ct; expected a hard error (I10)" >&2
+            cat out.txt err.txt >&2
+            exit 1
+          fi
+          grep -q "ct not found" err.txt || {
+            echo "unexpected error text; expected 'ct not found'" >&2
+            cat err.txt >&2
+            exit 1
+          }
+          echo "ok: verify failed with rc=$rc and reported a missing ct"

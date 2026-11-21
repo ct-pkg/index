@@ -11,6 +11,7 @@
 #
 # Usage:
 #   tools/package.sh check [<name> ...]      read-only preflight for packages
+#   tools/package.sh verify <name> <version> replay one index row with `ct get`
 #   tools/package.sh publish <name>          create the repo if missing, push
 #                                            main + the tag from repos.txt
 #   tools/package.sh release <name> <tag>    push an existing local tag
@@ -29,15 +30,18 @@
 #   * `check` additionally runs `tools/check-char-host.sh` over the workspace.
 #
 # A compiler is only used after the index row is written, to replay it with
-# `ct get`; the check path itself never invokes `ct`.
+# `ct get`. That replay is mandatory: when no compiler is found, publish and
+# release abort instead of pushing an unverified row (get-contract I10). The
+# `check` path never invokes `ct`.
 #
 # Environment:
 #   ORG         GitHub organisation (default ct-pkg)
 #   STAGING     local checkout root (default ~/vscspace/ct-pkg)
 #   MANIFEST    release manifest (default tools/repos.txt)
 #   INDEX_DIR   index repository (default this repository)
-#   CT_BIN      compiler/driver used only to replay a fresh index row
-#               (default `ct`, then `ct-ast`); `check` does not use it
+#   CT_BIN      compiler/driver used to replay a fresh index row
+#               (default `ct`, then `ct-ast`); a missing one aborts the
+#               publish/release pipeline; `check` does not use it
 #   GITHUB_TOKEN / GH_TOKEN   token used for the API and HTTPS pushes
 #
 # The script is idempotent and never force-pushes: an existing repository and
@@ -62,6 +66,8 @@ usage() {
 usage: tools/package.sh <command> [args]
 
   check [<name> ...]      read-only preflight for packages (default: all)
+  verify <name> <version> replay one existing index row with `ct get`;
+                          exits non-zero when no compiler is found
   publish <name>          create the repo if missing, push main + the tag
                           from tools/repos.txt, then refresh and publish the
                           index
@@ -72,13 +78,17 @@ Both publish and release end with the same pipeline:
   preflight -> push main + tag -> wait for the tag -> rebuild index ->
   verify the row with `ct get` -> commit + push index -> sync repos.txt
 
+The replay is mandatory: without a compiler, publish and release abort
+instead of pushing a row no consumer has installed (get-contract I10).
+
 Environment:
   ORG         GitHub organisation (default ct-pkg)
   STAGING     local checkout root (default ~/vscspace/ct-pkg)
   MANIFEST    release manifest (default tools/repos.txt)
   INDEX_DIR   index repository (default this repository)
-  CT_BIN      compiler/driver used only to replay a fresh index row
-              (default `ct`, then `ct-ast`); `check` does not use it
+  CT_BIN      compiler/driver used to replay a fresh index row
+              (default `ct`, then `ct-ast`); a missing one aborts
+              publish/release; `check` does not use it
   GITHUB_TOKEN / GH_TOKEN   token for the API and HTTPS pushes
 
 The script is idempotent and never force-pushes.
@@ -246,8 +256,7 @@ verify_row() {
     local name="$1" version="$2"
     resolve_ct
     if [ -z "$CT_BIN_RESOLVED" ]; then
-        warn "ct not found; skipped the consumer replay of '$name'"
-        return 0
+        fail "ct not found: the consumer replay of '$name' is required before the index is pushed (get-contract I10); install ct or point CT_BIN at it"
     fi
     info "replaying $name@$version through $CT_BIN_RESOLVED get"
     if ! ( cd "$index_dir" && CT_BIN="$CT_BIN_RESOLVED" \
@@ -443,6 +452,12 @@ cmd_publish() {
     grep "^$name " "$index_dir/index" || true
 }
 
+cmd_verify() {
+    local name="$1" version="$2"
+    verify_row "$name" "$version"
+    ok "$name $version replayed through $CT_BIN_RESOLVED"
+}
+
 # ---------------------------------------------------------------------------
 main() {
     [ $# -ge 1 ] || usage 2
@@ -450,6 +465,9 @@ main() {
     case "$cmd" in
         check)
             cmd_check "$@" ;;
+        verify)
+            [ $# -eq 2 ] || usage 2
+            cmd_verify "$1" "$2" ;;
         release)
             [ $# -eq 2 ] || usage 2
             cmd_release "$1" "$2" ;;

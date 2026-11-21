@@ -614,5 +614,6 @@ bash ~/trae-ws/.ai-engineering/bin/sync-agents.sh --check AGENTS.md
 - [ ] `tools/package-check.sh <dir>` 通过（`--strict` 时含 S1–S5）
 - [ ] `tools/check-layout.sh` 与 `tools/check-char-host.sh` 通过
 - [ ] `packages.txt` 已加入该仓，`refresh-index.sh --dry-run` 只新增预期行
+- [ ] 推送索引前确认 `package.sh verify` 实际执行过回放；无 `ct` 时必须失败，不得绕过（get-contract I10）
 - [ ] 新增检查脚本已补负例，且 `bash -n` 通过
 - [ ] README 未新增硬编码版本
