@@ -14,11 +14,3 @@
 # the index keeps no rows the generator cannot reproduce.
 std https://github.com/ct-pkg/std
 http https://github.com/ct-pkg/http
-sse https://github.com/ct-pkg/sse
-llm-sse https://github.com/ct-pkg/llm-sse
-process https://github.com/ct-pkg/process
-token https://github.com/ct-pkg/token
-json https://github.com/ct-pkg/json
-fsguard https://github.com/ct-pkg/fsguard
-rill-dsl https://github.com/ct-pkg/rill-dsl
-nexcore https://github.com/ct-pkg/nexcore
