@@ -151,6 +151,30 @@ push_git() {
     fi
 }
 
+# Push `main` with the same guards as refresh-index.sh --push: refuse a
+# non-fast-forward update before pushing, never force, and read the remote tip
+# back afterwards. `label` names the pushed artifact in diagnostics.
+guard_push() {
+    local dir="$1" label="$2" url remote_sha head after
+    url=$(git -C "$dir" remote get-url origin 2>/dev/null || true)
+    remote_sha=$(git -C "$dir" ls-remote origin refs/heads/main 2>/dev/null \
+        | awk '{ print $1 }')
+    if [ -n "$remote_sha" ]; then
+        git -C "$dir" fetch --quiet origin main \
+            || fail "cannot fetch main from ${url:-origin} before pushing $label"
+        remote_sha=$(git -C "$dir" ls-remote origin refs/heads/main | awk '{ print $1 }')
+        head=$(git -C "$dir" rev-parse HEAD)
+        if [ -n "$remote_sha" ] && ! git -C "$dir" merge-base --is-ancestor "$remote_sha" HEAD; then
+            fail "remote main ($remote_sha) at ${url:-origin} is not an ancestor of HEAD ($head); refusing a non-fast-forward $label push"
+        fi
+    fi
+    head=$(git -C "$dir" rev-parse HEAD)
+    push_git "$dir" push origin main || fail "pushing $label failed"
+    after=$(git -C "$dir" ls-remote origin refs/heads/main | awk '{ print $1 }')
+    [ "$after" = "$head" ] \
+        || fail "verification failed for $label: remote main is ${after:-<missing>}, local HEAD is $head"
+}
+
 # ---------------------------------------------------------------------------
 # Manifest
 # ---------------------------------------------------------------------------
@@ -273,7 +297,7 @@ publish_index() {
     else
         git -C "$index_dir" add index
         git -C "$index_dir" commit -q -m "index: $msg" || fail "committing the index failed"
-        push_git "$index_dir" push origin main || fail "pushing the index failed"
+        guard_push "$index_dir" index
         ok "index committed and pushed"
     fi
 }
