@@ -17,7 +17,13 @@
 #   tools/check-layout.sh                 # every package under the repo root
 #   tools/check-layout.sh hal sqlite      # only the named package roots
 #
-# Exit status: 0 when every namespaced unit matches, 1 otherwise.
+# `CT_PKG_ROOT` selects the workspace root. When it is unset or empty the
+# default is `tools/../..`, which is the layout of a normal checkout.
+#
+# Exit status: 0 when every namespaced unit matches, 1 otherwise. An empty scan
+# set is a failure, not a pass: a workspace root with no `*/ct.pkg` usually
+# means the package checkouts are missing, and reporting `ok: 0` there would
+# hide a broken CI clone.
 
 set -uo pipefail
 
@@ -30,7 +36,16 @@ repo="${CT_PKG_ROOT:-$(cd "$here/../.." && pwd)}"
 if [ $# -gt 0 ]; then
     packages=()
     for d in "$@"; do
-        packages+=("$(cd "$d" && pwd)")
+        [ -d "$d" ] || {
+            printf 'check-layout: %s is not a directory\n' "$d" >&2
+            exit 1
+        }
+        pkg="$(cd "$d" && pwd)"
+        [ -e "$pkg/ct.pkg" ] || {
+            printf 'check-layout: %s has no ct.pkg\n' "$pkg" >&2
+            exit 1
+        }
+        packages+=("$pkg")
     done
 else
     packages=()
@@ -40,11 +55,17 @@ else
     done
 fi
 
+if [ "${#packages[@]}" -eq 0 ]; then
+    printf 'check-layout: no packages found under %s (expected %s/*/ct.pkg)\n' \
+        "$repo" "$repo" >&2
+    printf 'check-layout: set CT_PKG_ROOT to the workspace root that holds the package checkouts\n' >&2
+    exit 1
+fi
+
 checked=0
 mismatched=0
 
 for pkg in "${packages[@]}"; do
-    [ -e "$pkg/ct.pkg" ] || { printf 'skip  %s (no ct.pkg)\n' "$pkg"; continue; }
     name="$(basename "$pkg")"
     while IFS= read -r f; do
         rel="${f#"$pkg"/}"
