@@ -14,7 +14,7 @@
 | --- | --- | --- | --- |
 | `v0-PH-0` | `IDX-1` / `AN-IDX-1` | 已收口 2026-11-21（`v0.0.0`，[对照](reviews/closeout-v0-PH-0.md)） | `docs/decisions/D-1.md` |
 | `v0-PH-1` | `IDX-3` / `AN-IDX-3` | 已收口 2026-11-21（`v0.1.0`，[对照](reviews/closeout-v0-PH-1.md)） | `docs/decisions/D-2.md` |
-| `v0-PH-2` | `IDX-4` / `AN-IDX-4` | 已开卡，待执笔人实现 | `docs/decisions/D-3.md` |
+| `v0-PH-2` | `IDX-4` / `AN-IDX-4` | 已收口 2026-11-21（`v0.2.0`，[对照](reviews/closeout-v0-PH-2.md)） | `docs/decisions/D-3.md` |
 | `v0-PH-3` | `IDX-6` / `AN-IDX-6` | 已开卡，待执笔人实现；建议 `v0-PH-1` 收口后开工（同文件） | `docs/decisions/D-4.md` |
 
 `v0-PH-0` 覆盖已推送的三个实现提交：`3f0e1bb`、`3c636d5`、`0cdb132`。
