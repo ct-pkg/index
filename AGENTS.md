@@ -516,7 +516,7 @@ AI_ENGINEERING_SPEC=<主规范路径> ...                          # 覆盖默�
 | 索引格式 | `name version publisher git-url tag sha256:<64 hex>`；`ct` v0.54.0+ 消费，旧五字段仍可解析 |
 | 发布触发 | 包仓 push `v*` tag；nightly `--all-tags` 或人工 `--commit` / `--push` 收录 |
 | 依赖 | bash/sh、git；不依赖已安装的 `ct`（`ct` 只用于可选回放） |
-| 当前状态 | `packages.txt` 10 个仓、`index` 26 行（全为六字段）；10 个旧仓因 tag 缺 `publisher` / `ns-root` 已移出清单，重新发版后再加回 |
+| 当前状态 | `packages.txt` 2 个仓、`index` 5 行（全为六字段）；2026-11-21 重建时移出 8 个已注册仓；另有 10 个旧仓因 tag 缺 `publisher` / `ns-root` 未列入。重新加回需改 `packages.txt` 并重建 |
 
 ### 2. 文件职责与改动边界
 

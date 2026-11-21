@@ -65,14 +65,13 @@ here: `index` is the only source of truth for what is published.
 | --- | --- |
 | https://github.com/ct-pkg/std | `std` |
 | https://github.com/ct-pkg/http | `http` |
-| https://github.com/ct-pkg/sse | `sse` |
-| https://github.com/ct-pkg/llm-sse | `llm-sse` |
-| https://github.com/ct-pkg/process | `process` |
-| https://github.com/ct-pkg/token | `token` |
-| https://github.com/ct-pkg/json | `json` |
-| https://github.com/ct-pkg/fsguard | `fsguard` |
-| https://github.com/ct-pkg/rill-dsl | `rill` up to 0.23.1, `rill-dsl` from 0.23.2 |
-| https://github.com/ct-pkg/nexcore | `nexcore` |
+
+The current input is limited to `std` and `http` after the 2026-11-21 rebuild.
+The other eight repositories (`sse`, `llm-sse`, `process`, `token`, `json`,
+`fsguard`, `rill-dsl`, `nexcore`) were removed from `packages.txt` by that
+scope change, not by a validation failure; they still exist and remain in
+`tools/repos.txt`. Restoring their rows and rerunning the refresh re-admits
+them.
 
 `std` is the CT standard library moved out of ct-lang, and it now owns the C
 mappings that used to live in `clib` (which was deleted, not archived).
@@ -84,6 +83,10 @@ mappings that used to live in `clib` (which was deleted, not archived).
 `publisher` or `ns-root`, so no row can be generated for them. They are absent
 from `packages.txt` and have no line in `index`; a re-release that carries both
 keys puts them back in the list like any other package.
+
+The eight repositories removed by the 2026-11-21 scope change are listed in
+`tools/repos.txt`; unlike the list above, they carry `publisher` / `ns-root`,
+so they can be re-admitted without a new release.
 
 The generator refuses to mix publishers across versions of one package: the
 newest tag defines the identity, and older tags with a different publisher are
@@ -301,7 +304,7 @@ home. They are records, not per-package manuals:
 
 ```sh
 export CT_INDEX=$PWD/index
-ct get <publisher>/<name>@<version>   # e.g. ct/std@0.19.0
+ct get '<publisher>/<name>@<range>'   # e.g. ct/std@>=0.20.0
 ct install                            # offline check; prints the build command
 ct verify                             # offline digest check against ct.lock
 ```
