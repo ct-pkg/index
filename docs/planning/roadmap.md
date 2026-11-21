@@ -3,24 +3,29 @@
 > 角色：主编（EDITOR）。本文件只做编排：排顺序、写依赖与边界，不决定"做什么"
 > （条目内容归需求池，R-1），不改条目的 `what`（P-1）。
 >
-> **本仓首次建立 roadmap，尚无已定稿 phase。** 下列四项均为草案（主规范 6.7.1
-> PN-12）：目录为 `docs/phases/draft-<slug>/`，不占用、也不预留正式编号
-> `v<M>-PH-<n>`，不排期、不派工、不开工（PN-14）。定稿须走 PN-13 的原子动作，
-> 授权来自 decision 或本文件带 `authorized` 的行（PN-15）；当前没有任何一行带
-> `authorized`。
+> 草案按主规范 6.7.1 PN-12 命名：目录 `docs/phases/draft-<slug>/`，卡头
+> `phase-id: draft-<slug>` + `status: draft`，不占正式编号，不排期、不派工、
+> 不开工（PN-14）。定稿走 PN-13 的原子动作；授权来自 `docs/decisions/` 的
+> decision。编号账本：`docs/planning/phase-id-ledger.md`（window: W3）。
 
-## 1. 顺序与依赖
+## 0. 已定稿 phase
+
+| phase | 追溯 | 状态 | 授权 |
+| --- | --- | --- | --- |
+| `v0-PH-0` | `IDX-1` / `AN-IDX-1` | 已开卡，退出判据待第 5 条（nightly 绿） | `docs/decisions/D-1.md` |
+
+`v0-PH-0` 覆盖已推送的三个实现提交：`3f0e1bb`、`3c636d5`、`0cdb132`。
+
+## 1. 顺序与依赖（草案）
 
 | 顺序 | 草案 | 追溯 | 能否开工 | 依赖 | 边界 |
 | --- | --- | --- | --- | --- | --- |
-| 1 | `draft-index-refresh-unblock` | AN-IDX-1 | 否，阻塞 | 用户在 A / B 之间裁定 | 只动 `packages.txt` 与文档，不改 `refresh-index.sh` 的 fail-closed 语义，不改 `ct` 仓 |
-| 2 | `draft-gate-zero-input` | AN-IDX-3 | 是 | 无 | 只加零输入断言与负例，不改门禁判定逻辑；若顺序 1 选 B，需同步确认 `gates.yml` 的克隆源 |
-| 3 | `draft-index-push-parity` | AN-IDX-4 | 是 | 无 | 只补 `package.sh` 的快进断言与回读，不合并两条推送入口 |
-| 4 | `draft-readme-single-source` | AN-IDX-2 | 是 | 无 | 只改 README 与静态列表，不引入表格自动生成 |
+| — | ~~`draft-index-refresh-unblock`~~ | AN-IDX-1 | — | — | 已于 2026-11-21 定稿为 `v0-PH-0`（D-1） |
+| 1 | `draft-gate-zero-input` | AN-IDX-3 | 是 | 无 | 只加零输入断言与负例，不改门禁判定逻辑 |
+| 2 | `draft-index-push-parity` | AN-IDX-4 | 是；I10 硬错已在 `7a0c7cd` 修复，不属于本草案 | 无 | 只补 `package.sh` 的快进断言与推送后回读，不合并两条推送入口 |
+| 3 | `draft-readme-single-source` | AN-IDX-2 | 是；版本表已去版本化（`0cdb132`），剩余为"由 CI 生成或引用"的增量 | 无 | 只改 README 与静态列表，不引入表格自动生成 |
 
-顺序 2、3、4 互不依赖，可并行；顺序 1 阻塞但不阻塞其余三项——它不是其余三项的
-前置条件，只决定 nightly 何时恢复。之所以列在第一，是因为它决定 `index` 的自动
-更新是否继续工作。
+序号 1、2、3 互不依赖，可并行。
 
 ## 2. 未入图条目
 
@@ -39,4 +44,5 @@
 
 授权只能来自 `docs/decisions/` 的 decision（含 `target`、`signer`、`date`），或本
 文件同一行同时含 `draft-<slug>`、`v<M>-PH-<n>` 与 `authorized`。作者自行去掉
-`draft` 不算授权。
+`draft` 不算授权。已按此流程完成一次：`draft-index-refresh-unblock` → `v0-PH-0`
+（`docs/decisions/D-1.md`）。

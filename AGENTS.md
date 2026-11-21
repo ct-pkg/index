@@ -450,11 +450,11 @@ AI_ENGINEERING_SPEC=<主规范路径> ...                          # 覆盖默�
 | --- | --- |
 | 仓库性质 | ct-pkg 组织的**维护仓**：产物是 `index` 文本文件与 `tools/` 脚本；本身不是 ct 包，无 `ct.pkg`，不在 `packages.txt` |
 | 对话清单 | 单会话；三类常驻对话未建（见 0.3） |
-| 任务-对话映射 | 暂空：尚无已定稿 phase（草案按 PN-14 不得写入 `docs/session-map.md`） |
+| 任务-对话映射 | `docs/session-map.md`；首个正式 phase `v0-PH-0` 已登记（草案不登记，PN-14） |
 | 门禁入口 | `tools/package-check.sh`（发布 lint）、`tools/check-layout.sh`、`tools/check-char-host.sh`、`tools/sync-repos-tags.sh --check`、`tools/refresh-index.sh --dry-run`；**无** `tools/check.sh`（G0–G9 未脚本化，见 0.3） |
 | 文档 snippet | 无 |
 | Issue 台账 | `docs/planning/requirements-pool.md`，id 前缀 `IDX-`；分析在 `docs/planning/analysis/AN-IDX-<n>.md` |
-| 决策记录 | `docs/decisions/D-<n>.md`（尚未建立）；跨包决策草案在 `docs/reviews/` |
+| 决策记录 | `docs/decisions/D-<n>.md`（已建立：`D-1` 授权 `v0-PH-0`） |
 | 版本落点 | 本仓不发版，没有 `CTC_VERSION`；版本事实在 `index` 每行第二列与 `tools/repos.txt` 的 `tag` 列，两者由 `tools/sync-repos-tags.sh` 保持一致 |
 | 偏离项 | 见 0.3 |
 
