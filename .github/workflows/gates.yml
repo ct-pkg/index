@@ -26,6 +26,9 @@ jobs:
         with:
           path: ws/index
 
+      - name: gate self-test (zero input, fixtures)
+        run: bash ws/index/tools/gate-selftest.sh
+
       - name: clone every package in packages.txt
         run: |
           set -eu
