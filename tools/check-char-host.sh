@@ -23,7 +23,13 @@
 # Usage:
 #   tools/check-char-host.sh
 #
-# Exit status: 0 when every host is unambiguous, 1 otherwise.
+# `CT_PKG_ROOT` selects the workspace root. When it is unset or empty the
+# default is `tools/../..`, which is the layout of a normal checkout.
+#
+# Exit status: 0 when every host is unambiguous, 1 otherwise. A workspace root
+# with no `*/ct.pkg` is a failure: it means the package checkouts are missing,
+# and `ok: 0 methods on 0 hosts` there would hide a broken CI clone. Packages
+# that simply declare no mapped method are fine and still exit 0.
 # Runs on macOS /bin/bash 3.2 and needs only awk, sed, sort and find.
 
 set -uo pipefail
@@ -33,6 +39,17 @@ here="$(cd "$(dirname "$0")" && pwd)"
 # ct-pkg workspace root. `CT_PKG_ROOT` overrides that (CI checks out the
 # packages somewhere else).
 repo="${CT_PKG_ROOT:-$(cd "$here/../.." && pwd)}"
+
+pkgs=0
+for m in "$repo"/*/ct.pkg; do
+    [ -e "$m" ] && pkgs=$((pkgs + 1))
+done
+if [ "$pkgs" -eq 0 ]; then
+    printf 'check-char-host: no packages found under %s (expected %s/*/ct.pkg)\n' \
+        "$repo" "$repo" >&2
+    printf 'check-char-host: set CT_PKG_ROOT to the workspace root that holds the package checkouts\n' >&2
+    exit 1
+fi
 
 tmp="$(mktemp -d "${TMPDIR:-/tmp}/char-host.XXXXXX")"
 trap 'rm -rf "$tmp"' EXIT INT TERM
