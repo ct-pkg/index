@@ -5,7 +5,7 @@
 #
 # The tag column mirrors index/index: after refreshing the index, run
 # tools/sync-repos-tags.sh (or --check) instead of editing tags by hand.
-std|v0.19.0|ct.pkg|The CT standard library moved out of ct-lang: str, io, fs, utf8, vec, map, arena, test, num, math
+std|v0.20.0|ct.pkg|The CT standard library moved out of ct-lang: str, io, fs, utf8, vec, map, arena, test, num, math
 http|v0.2.1|ct.pkg|Thin streaming HTTP client for CT, built on libcurl
 sse|v0.13.0|ct.pkg|WHATWG-compliant Server-Sent Events parser for CT
 llm-sse|v0.1.0|ct.pkg|OpenAI/Anthropic-compatible streaming chat for CT, built on http + sse + json
