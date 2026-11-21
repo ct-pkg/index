@@ -261,6 +261,8 @@ root; when the variable is unset **or empty** the default `tools/../..` is used,
 so an unset variable is not an error. A root that contains no `*/ct.pkg`, on the
 other hand, is a failure: both scripts exit 1 and print the resolved root, the
 package count and a hint to set `CT_PKG_ROOT`, instead of reporting `ok: 0`.
+The diagnostic begins with `check-layout: no packages found` or
+`check-char-host: no packages found`, so a CI log shows the failure directly.
 That keeps a broken CI clone from looking green. `tools/package.sh check` runs
 the same gates before a release, together with `tools/package-check.sh` and the
 workspace-wide `check-char-host.sh`.

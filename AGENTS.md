@@ -451,7 +451,7 @@ AI_ENGINEERING_SPEC=<主规范路径> ...                          # 覆盖默�
 | 仓库性质 | ct-pkg 组织的**维护仓**：产物是 `index` 文本文件与 `tools/` 脚本；本身不是 ct 包，无 `ct.pkg`，不在 `packages.txt` |
 | 对话清单 | 规划会话（REQ + EDITOR）；实现由执笔人（DEV）承担；VERIFY 暂由执笔人复核留痕（见 0.3） |
 | 任务-对话映射 | `docs/session-map.md`；正式 phase `v0-PH-0`、`v0-PH-1` 已登记（草案不登记，PN-14） |
-| 门禁入口 | `tools/package-check.sh`（发布 lint）、`tools/check-layout.sh`、`tools/check-char-host.sh`、`tools/gate-selftest.sh`、`tools/sync-repos-tags.sh --check`、`tools/refresh-index.sh --dry-run`；`CT_PKG_ROOT` 未设置或为空时按默认工作区根解析，零包时必须红；**无** `tools/check.sh`（G0–G9 未脚本化，见 0.3） |
+| 门禁入口 | `tools/package-check.sh`（发布 lint）、`tools/check-layout.sh`、`tools/check-char-host.sh`、`tools/gate-selftest.sh`、`tools/sync-repos-tags.sh --check`、`tools/refresh-index.sh --dry-run`；`CT_PKG_ROOT` 未设置或为空时按默认工作区根解析；零包时两个门禁打印 `no packages found` 并 rc=1；**无** `tools/check.sh`（G0–G9 未脚本化，见 0.3） |
 | 文档 snippet | 无 |
 | Issue 台账 | `docs/planning/requirements-pool.md`，id 前缀 `IDX-`；分析在 `docs/planning/analysis/AN-IDX-<n>.md` |
 | 决策记录 | `docs/decisions/D-<n>.md`（已建立：`D-1` → `v0-PH-0`，`D-2` → `v0-PH-1`） |
