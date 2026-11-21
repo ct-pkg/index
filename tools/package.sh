@@ -305,7 +305,7 @@ publish_index() {
 sync_manifest() {
     local name="$1" tag="$2" rel
     if [ -x "$here/sync-repos-tags.sh" ]; then
-        "$here/sync-repos-tags.sh" >/dev/null || true
+        "$here/sync-repos-tags.sh" "$index_dir/index" "$MANIFEST" >/dev/null || true
     fi
     case "$MANIFEST" in
         "$index_dir"/*) rel="${MANIFEST#"$index_dir"/}" ;;
@@ -317,7 +317,7 @@ sync_manifest() {
     git -C "$index_dir" add -- "$rel"
     git -C "$index_dir" commit -q -m "repos.txt: $name -> $tag" \
         || fail "committing $rel failed"
-    push_git "$index_dir" push origin main || fail "pushing $rel failed"
+    guard_push "$index_dir" "$rel"
     ok "$rel: $name -> $tag"
 }
 
