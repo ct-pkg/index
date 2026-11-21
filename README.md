@@ -258,7 +258,7 @@ and prints every command, expected exit code and observed output.
 
 | Script | What it checks |
 | --- | --- |
-| `tools/check-layout.sh [package ...]` | Every unit that declares `namespace A::B;` sits in `<package-root>/A/B/`. With no arguments it walks every `*/ct.pkg` in the workspace. Units without a namespace (C bindings and their `.m.ct` shims) are exempt. |
+| `tools/check-layout.sh [package ...]` | Every unit that declares `namespace A::B;` sits in `<package-root>/<ns-root>/A/B/`. With no arguments it walks every `*/ct.pkg` in the workspace. Units without a namespace (C bindings and their `.m.ct` shims) are exempt; namespaced units outside the package's `ns-root` are counted as `skipped` and reported, not failed. |
 | `tools/check-char-host.sh` | The compiler keys a mapped method by `(host, method)` and ignores the signature, so two packages may each add `len()` on `char *` and only clash at a call site that sees both. The script groups every `map trait ... for type\|namespace ...` block by host and fails on a duplicate name, and on a host declared `const` / `volatile` (the type key drops those qualifiers). |
 | `tools/gate-selftest.sh` | Fixture-based self-test for the two gates above: empty workspace, missing `ct.pkg`, matching and mismatching namespaces, packages without mapped methods, duplicate methods and `const` hosts. Runs without a package checkout. |
 
